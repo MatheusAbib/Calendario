@@ -299,7 +299,7 @@
             transition: background 0.2s;
             display: flex;
             flex-direction: column;
-              overflow: hidden !important;
+            overflow: hidden !important;
         }
 
         .days div:hover {
@@ -1503,11 +1503,21 @@
             .info-card-value {
                 font-size: 1.2em;
             }
-        }
+            
 
+                .btn-limpar {
+        display: none; /* Oculta botão desktop */
+    }
+    
+    .btn-limpar-mobile {
+        display: flex; /* Mostra botão mobile */
+    }
+    
+    /* Ajuste para não sobrepor o título do calendário */
+    .calendar-header h1 {
+        padding-right: 50px; /* Dá espaço para o botão */
+    }
 
-
-        @media (max-width: 767px) {
             body {
                 padding: 10px;
             }
@@ -1517,7 +1527,7 @@
             }
             
             .days div {
-                min-height: 100px;
+                min-height: 30px;
                 padding: 6px;
             }
             
@@ -1541,8 +1551,11 @@
             }
             
             .indicator {
-                width: 14px;
-                height: 14px;
+                width: 20px;
+                height: 15px;
+            }
+            .calendar-header{
+                justify-content: initial;
             }
             
             .indicator i {
@@ -1601,10 +1614,7 @@
             .modal-actions button {
                 min-width: 120px;
             }
-        }
 
-/* Responsividade para o consultor */
-@media (max-width: 767px) {
     .date-consultant {
         padding: 20px;
     }
@@ -1684,22 +1694,6 @@
     visibility: visible;
 }
 
-/* Mostrar apenas em mobile e ajustar posição */
-@media (max-width: 767px) {
-    .btn-limpar {
-        display: none; /* Oculta botão desktop */
-    }
-    
-    .btn-limpar-mobile {
-        display: flex; /* Mostra botão mobile */
-    }
-    
-    /* Ajuste para não sobrepor o título do calendário */
-    .calendar-header h1 {
-        padding-right: 50px; /* Dá espaço para o botão */
-    }
-}
-
 /* Ocultar botão mobile em telas maiores */
 @media (min-width: 768px) {
     .btn-limpar-mobile {
@@ -1726,7 +1720,7 @@
     }
     
     .calendar-header h1 {
-        padding-right: 45px;
+        padding-right: 10px;
         font-size: 1.2em;
     }
 }
