@@ -1,0 +1,2520 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendário Interativo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #f8f5f0;
+            --primary: #a52a2a;
+            --accent: #d4af37;
+            --text: #333;
+            --weekend: #f0e6dc;
+            --today: #ffe9a9;
+            --card-bg: #fff;
+            --event-list-bg: #f9f9f9;
+            --event-color: #3498db;
+            --holiday-color: #e74c3c;
+            --personal-event: #2ecc71;
+            --work-event: #3498db;
+            --health-event: #e74c3c;
+            --leisure-event: #f39c12;
+        }
+
+        [data-theme="dark"] {
+            --bg: #1a1a2e;
+            --primary: #c44569;
+            --accent: #f9ca24;
+            --text: #ecf0f1;
+            --weekend: #2d3436;
+            --today: #37474f;
+            --card-bg: #16213e;
+            --event-list-bg: #0f3460;
+            --event-color: #3498db;
+            --holiday-color: #e67e22;
+            --personal-event: #2ecc71;
+            --work-event: #2980b9;
+            --health-event: #c0392b;
+            --leisure-event: #d35400;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header com controles */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .controls button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .controls button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .theme-toggle {
+            background: var(--accent) !important;
+            color: var(--text) !important;
+        }
+
+        /* Botão de compromissos - visível apenas em mobile */
+        #event-list-toggle {
+            display: none; /* Escondido por padrão */
+        }
+
+        /* Cards de informação */
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-left: 5px solid var(--accent);
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,.15);
+        }
+
+        .info-card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background:  var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8em;
+            flex-shrink: 0;
+        }
+
+        .info-card-content {
+            flex: 1;
+        }
+
+        .info-card-title {
+            font-size: 0.9em;
+            color: var(--text);
+            opacity: 0.7;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .info-card-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: var(--primary);
+            line-height: 1.3;
+        }
+
+        .info-card-subtitle {
+            font-size: 0.85em;
+            color: var(--text);
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .holiday-card {
+            border-left-color: var(--holiday-color);
+        }
+
+        .holiday-card .info-card-icon {
+            background: linear-gradient(135deg, var(--holiday-color), #ff6b6b);
+        }
+
+        .holiday-card .info-card-value {
+            color: var(--holiday-color);
+        }
+
+        /* Layout principal */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .main-content {
+                flex-direction: row;
+            }
+            
+            .calendar-section {
+                flex: 2;
+            }
+            
+            .event-list-section {
+                flex: 1;
+                max-width: 400px;
+                display: block !important; /* Sempre visível em desktop */
+            }
+        }
+
+        /* Responsividade mobile */
+        @media (max-width: 767px) {
+            #event-list-toggle {
+                display: flex; /* Visível apenas em mobile */
+            }
+            
+            .event-list-section {
+                display: block; /* Visível por padrão em mobile */
+            }
+            
+            .info-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-card {
+                padding: 15px;
+            }
+            
+            .info-card-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5em;
+            }
+            
+            .info-card-value {
+                font-size: 1.2em;
+            }
+        }
+
+        /* Calendário - COM ANIMAÇÃO */
+        .calendar-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 12px 30px rgba(0,0,0,.15);
+            overflow: hidden;
+            transition: background 0.3s;
+            position: relative;
+        }
+
+        .calendar-header {
+            background: var(--primary);
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .calendar-header button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+            position: relative;
+            z-index: 3;
+        }
+
+        .calendar-header button:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .calendar-header button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .calendar-header button:disabled:hover {
+            background: none;
+        }
+
+        /* Container para animação de slide - ALTURA AJUSTÁVEL */
+        .calendar-content {
+            position: relative;
+            overflow: hidden;
+            /* A altura será calculada dinamicamente pelo JavaScript */
+        }
+
+        .calendar-month {
+            position: absolute;
+            width: 100%;
+            /* A altura será calculada dinamicamente */
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+            top: 0;
+            left: 0;
+        }
+
+        .calendar-month.current {
+            transform: translateX(0);
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .calendar-month.previous {
+            transform: translateX(-100%);
+            opacity: 0;
+            z-index: 0;
+        }
+
+        .calendar-month.next {
+            transform: translateX(100%);
+            opacity: 0;
+            z-index: 0;
+        }
+
+        .calendar-month.slide-left {
+            animation: slideOutLeft 0.5s forwards;
+        }
+
+        .calendar-month.slide-right {
+            animation: slideOutRight 0.5s forwards;
+        }
+
+        .calendar-month.slide-left-enter {
+            animation: slideInLeft 0.5s forwards;
+        }
+
+        .calendar-month.slide-right-enter {
+            animation: slideInRight 0.5s forwards;
+        }
+
+        @keyframes slideOutLeft {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(-100%); opacity: 0; }
+        }
+
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .weekdays,
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+
+        .weekdays div {
+            text-align: center;
+            padding: 12px 8px;
+            font-weight: bold;
+            background: rgba(0,0,0,0.05);
+            color: var(--text);
+        }
+
+        .days div {
+            min-height: 32px;
+            padding: 10px;
+            border: 1px solid rgba(0,0,0,0.05);
+            cursor: pointer;
+            position: relative;
+            transition: background 0.2s;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .days div:hover {
+            background: rgba(0,0,0,0.03);
+        }
+
+        .days div.weekend {
+            background: var(--weekend);
+        }
+
+        .days div.today {
+            background: var(--today);
+            font-weight: bold;
+            border: 2px solid var(--primary);
+        }
+
+        .day-number {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 4px;
+            line-height: 1;
+        }
+
+        .days div.today .day-number {
+            background: var(--primary);
+            color: white;
+            padding: 8px 6px;
+            border-radius: 2px;
+            display: inline-block;
+        }
+
+        /* INDICADORES - COM NOVAS CORES PARA CATEGORIAS */
+        .day-indicators {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            align-items: center;
+            flex-direction: row !important;
+            min-height: 24px;
+            padding: 2px 0;
+        }
+
+        /* CÍRCULOS PERFEITOS - FIXED */
+        .indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+            border: 2px solid var(--card-bg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .indicator:hover {
+            transform: scale(1.1);
+            z-index: 100;
+        }
+
+        /* Cores para diferentes tipos de eventos */
+        .indicator.holiday {
+            background: linear-gradient(135deg, var(--holiday-color), #ff6b6b);
+        }
+
+        .indicator.personal {
+            background: linear-gradient(135deg, var(--personal-event), #26de81);
+        }
+
+        .indicator.work {
+            background: linear-gradient(135deg, var(--work-event), #3498db);
+        }
+
+        .indicator.health {
+            background: linear-gradient(135deg, var(--health-event), #e74c3c);
+        }
+
+        .indicator.leisure {
+            background: linear-gradient(135deg, var(--leisure-event), #f39c12);
+        }
+
+        /* Ícone dentro do indicador - menor */
+        .indicator i {
+            color: white;
+            font-size: 0.7em;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 11;
+            pointer-events: none;
+        }
+
+        /* TOOLTIP */
+        .indicator .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 8px;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            pointer-events: none;
+            font-weight: 500;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            text-align: center;
+            min-width: 120px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .indicator .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.95) transparent transparent transparent;
+        }
+
+        .indicator:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Lista de compromissos */
+        .event-list-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 12px 30px rgba(0,0,0,.15);
+            transition: background 0.3s;
+            height: fit-content;
+        }
+
+        .event-list-container h3 {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .event-list-container h3 i {
+            font-size: 1.2em;
+        }
+
+        .event-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .event-stats {
+            display: flex;
+            gap: 10px;
+            font-size: 0.9em;
+            color: var(--text);
+            opacity: 0.8;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        #event-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        #event-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #event-list::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 3px;
+        }
+
+        .event-list-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: var(--event-list-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--personal-event);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: transform 0.2s;
+        }
+
+        .event-list-item:hover {
+            transform: translateX(5px);
+        }
+
+        .event-date {
+            font-weight: bold;
+            font-size: 0.9em;
+            color: var(--primary);
+            min-width: 80px;
+        }
+
+        .event-text {
+            flex: 1;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
+        .event-type-badge {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            font-weight: bold;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .holiday-item {
+            border-left-color: var(--holiday-color) !important;
+        }
+
+        .holiday-badge {
+            background: var(--holiday-color);
+            color: white;
+        }
+
+        .personal-badge {
+            background: var(--personal-event);
+            color: white;
+        }
+
+        .work-badge {
+            background: var(--work-event);
+            color: white;
+        }
+
+        .health-badge {
+            background: var(--health-event);
+            color: white;
+        }
+
+        .leisure-badge {
+            background: var(--leisure-event);
+            color: white;
+        }
+
+        /* Modal PRINCIPAL - AGORA COM RECORRÊNCIA */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            color: var(--text);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 16px;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .modal-content input,
+        .modal-content select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(0,0,0,0.2);
+            border-radius: 8px;
+            background: var(--event-list-bg);
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        .modal-content input:focus,
+        .modal-content select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* CHECKBOX ALINHADO - CORREÇÃO */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin: 0;
+            color: var(--text);
+        }
+
+        .event-category-selector {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .category-option {
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .category-option input[type="radio"] {
+            display: none;
+        }
+
+        .category-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            border: 2px solid transparent;
+            background: var(--event-list-bg);
+        }
+
+        .category-option label:hover {
+            transform: translateY(-2px);
+        }
+
+        .category-option input[type="radio"]:checked + label {
+            border-color: var(--primary);
+            background: rgba(var(--primary-rgb, 165, 42, 42), 0.1);
+        }
+
+        .category-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-bottom: 6px;
+        }
+
+        .category-option[data-category="personal"] .category-color {
+            background: var(--personal-event);
+        }
+
+        .category-option[data-category="work"] .category-color {
+            background: var(--work-event);
+        }
+
+        .category-option[data-category="health"] .category-color {
+            background: var(--health-event);
+        }
+
+        .category-option[data-category="leisure"] .category-color {
+            background: var(--leisure-event);
+        }
+
+        .recurrence-options {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .recurrence-options.show {
+            display: block;
+        }
+
+        .recurrence-type-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .recurrence-option {
+            position: relative;
+        }
+
+        .recurrence-option input[type="radio"] {
+            display: none;
+        }
+
+        .recurrence-option label {
+            display: block;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            background: var(--event-list-bg);
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .recurrence-option label:hover {
+            background: rgba(var(--primary-rgb, 165, 42, 42), 0.1);
+        }
+
+        .recurrence-option input[type="radio"]:checked + label {
+            border-color: var(--primary);
+            background: rgba(var(--primary-rgb, 165, 42, 42), 0.15);
+        }
+
+        .weekly-options,
+        .monthly-options {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 6px;
+        }
+
+        .weekly-options.show,
+        .monthly-options.show {
+            display: block;
+        }
+
+        .days-of-week {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .day-of-week-option input[type="checkbox"] {
+            display: none;
+        }
+
+        .day-of-week-option label {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            background: var(--event-list-bg);
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .day-of-week-option label:hover {
+            transform: scale(1.1);
+        }
+
+        .day-of-week-option input[type="checkbox"]:checked + label {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .modal-actions button {
+            padding: 10px 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            flex: 1;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        #save {
+            background: var(--primary);
+            color: white;
+        }
+
+        #delete {
+            background: #e74c3c;
+            color: white;
+            display: none;
+        }
+
+        #close {
+            background: var(--event-list-bg);
+            color: var(--text);
+        }
+
+        /* Modal de feriado */
+        .holiday-modal-content {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            color: var(--text);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .holiday-modal-content h2 {
+            margin-bottom: 16px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .holiday-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(var(--holiday-color-rgb, 231, 76, 60), 0.1);
+            border-radius: 8px;
+            border-left: 4px solid var(--holiday-color);
+        }
+
+        .holiday-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--holiday-color), #ff6b6b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+        }
+
+        .holiday-details {
+            flex: 1;
+        }
+
+        .holiday-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--holiday-color);
+        }
+
+        .holiday-date {
+            font-size: 0.9em;
+            color: var(--text);
+            opacity: 0.8;
+        }
+
+        .holiday-note {
+            font-style: italic;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .add-event-btn {
+            background: var(--personal-event) !important;
+            color: white !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .add-event-btn:hover {
+            background: #27ae60 !important;
+        }
+
+        /* Responsividade mobile-first */
+        @media (max-width: 767px) {
+            body {
+                padding: 10px;
+            }
+            
+            .calendar-container {
+                border-radius: 12px;
+            }
+            
+            .days div {
+                min-height: 100px;
+                padding: 6px;
+            }
+            
+            .day-number {
+                font-size: 1em;
+            }
+            
+            .controls {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .app-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .app-header h1 {
+                text-align: center;
+                margin-bottom: 10px;
+            }
+            
+            .indicator {
+                width: 14px;
+                height: 14px;
+            }
+            
+            .indicator i {
+                font-size: 0.5em;
+            }
+            
+            .indicator .tooltip {
+                font-size: 0.7em;
+                padding: 5px 8px;
+                white-space: normal;
+                width: 140px;
+                word-wrap: break-word;
+            }
+            
+            .category-option {
+                min-width: 70px;
+            }
+            
+            .recurrence-type-selector {
+                grid-template-columns: 1fr;
+            }
+            
+            .day-of-week-option label {
+                width: 32px;
+                height: 32px;
+                font-size: 0.8em;
+            }
+            
+            .modal-content {
+                max-width: 95%;
+                padding: 20px;
+            }
+            
+            .event-count-badge {
+                width: 14px;
+                height: 14px;
+                font-size: 0.55em;
+            }
+            
+            .holiday-info {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .holiday-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.8em;
+            }
+            
+            .modal-actions {
+                flex-wrap: wrap;
+            }
+            
+            .modal-actions button {
+                min-width: 120px;
+            }
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: var(--text);
+        }
+
+        .loading i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        /* Legenda dos indicadores - ATUALIZADA */
+        .indicators-legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding: 12px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 0 0 8px 8px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75em;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--card-bg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .legend-dot.holiday {
+            background: linear-gradient(135deg, var(--holiday-color), #ff6b6b);
+        }
+
+        .legend-dot.personal {
+            background: linear-gradient(135deg, var(--personal-event), #26de81);
+        }
+
+        .legend-dot.work {
+            background: linear-gradient(135deg, var(--work-event), #3498db);
+        }
+
+        .legend-dot.health {
+            background: linear-gradient(135deg, var(--health-event), #e74c3c);
+        }
+
+        .legend-dot.leisure {
+            background: linear-gradient(135deg, var(--leisure-event), #f39c12);
+        }
+
+        /* Ajuste para quando há muitos indicadores */
+        .compact-indicators {
+            gap: 2px;
+        }
+
+        .compact-indicators .indicator {
+            width: 14px;
+            height: 14px;
+        }
+
+        .compact-indicators .indicator i {
+            font-size: 0.5em;
+        }
+        
+        /* Ajuste para garantir que o tooltip não seja cortado */
+        .days div {
+            overflow: visible !important;
+        }
+        
+        .day-indicators {
+            overflow: visible !important;
+            position: relative;
+        }
+
+        /* Badge de evento recorrente */
+        .recurring-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--accent);
+            color: var(--text);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            margin-left: 8px;
+            font-weight: 500;
+        }
+
+        .recurring-badge i {
+            font-size: 0.8em;
+        }
+
+        /* Botão Limpar LocalStorage */
+        .btn-limpar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 16px;
+            background-color: #d9534f;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-limpar:hover {
+            background-color: #c9302c;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <h1 id="app-title">Calendário de <span id="current-year"></span></h1>
+            <div class="controls">
+                <button id="theme-toggle" class="theme-toggle">
+                     Tema
+                </button>
+                <button id="today-btn">
+                    <i class="fas fa-calendar-day"></i> Hoje
+                </button>
+                <button id="event-list-toggle">
+                    <i class="fas fa-list"></i> Compromissos
+                </button>
+                <button id="refresh-holidays" style="display: none;">
+                    <i class="fas fa-globe"></i> Atualizar Feriados
+                </button>
+            </div>
+        </header>
+
+        <!-- Cards de informação -->
+        <div class="info-cards">
+            <div class="info-card">
+                <div class="info-card-icon">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">HOJE</div>
+                    <div class="info-card-value" id="current-date-display">Carregando...</div>
+                </div>
+            </div>
+            
+            <div class="info-card holiday-card">
+                <div class="info-card-icon">
+                    <i class="fas fa-flag"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">PRÓXIMO FERIADO</div>
+                    <div class="info-card-value" id="next-holiday-display">Carregando...</div>
+                    <div class="info-card-subtitle" id="next-holiday-days">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <section class="calendar-section">
+                <div class="calendar-container">
+                    <header class="calendar-header">
+                        <button id="prev" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <h1 id="month-year"></h1>
+                        <button id="next" disabled>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </header>
+
+                    <div class="calendar-content" id="calendar-content">
+                        <!-- Calendário será renderizado aqui com animação -->
+                    </div>
+                    
+                    <!-- Legenda dos indicadores ATUALIZADA -->
+                    <div class="indicators-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot holiday"></div>
+                            <span>Feriado</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot personal"></div>
+                            <span>Pessoal</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot work"></div>
+                            <span>Trabalho</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot health"></div>
+                            <span>Saúde</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot leisure"></div>
+                            <span>Lazer</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="event-list-section">
+                <div class="event-list-container">
+                    <h3><i class="fas fa-tasks"></i> Compromissos do Mês</h3>
+                    
+                    <div class="event-list-header">
+                        <div class="event-stats">
+                            <div class="stat">
+                                <div class="stat-dot" style="background: var(--holiday-color);"></div>
+                                <span id="holiday-count">0</span>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-dot" style="background: var(--personal-event);"></div>
+                                <span id="event-count">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="loading" id="holidays-loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Carregando feriados...</p>
+                    </div>
+                    <ul id="event-list">
+                        <!-- Lista de eventos será gerada aqui -->
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Modal para compromissos (edição) - ATUALIZADO COM CHECKBOX ALINHADO -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h2 id="modal-date"></h2>
+            
+            <div class="form-group">
+                <label for="event-input">Descrição do compromisso:</label>
+                <input type="text" id="event-input" placeholder="Ex: Reunião com equipe">
+            </div>
+            
+            <div class="form-group">
+                <label>Categoria:</label>
+                <div class="event-category-selector">
+                    <div class="category-option" data-category="personal">
+                        <input type="radio" id="category-personal" name="category" value="personal" checked>
+                        <label for="category-personal">
+                            <div class="category-color"></div>
+                            <span>Pessoal</span>
+                        </label>
+                    </div>
+                    <div class="category-option" data-category="work">
+                        <input type="radio" id="category-work" name="category" value="work">
+                        <label for="category-work">
+                            <div class="category-color"></div>
+                            <span>Trabalho</span>
+                        </label>
+                    </div>
+                    <div class="category-option" data-category="health">
+                        <input type="radio" id="category-health" name="category" value="health">
+                        <label for="category-health">
+                            <div class="category-color"></div>
+                            <span>Saúde</span>
+                        </label>
+                    </div>
+                    <div class="category-option" data-category="leisure">
+                        <input type="radio" id="category-leisure" name="category" value="leisure">
+                        <label for="category-leisure">
+                            <div class="category-color"></div>
+                            <span>Lazer</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CHECKBOX ALINHADO CORRETAMENTE -->
+            <div class="checkbox-group">
+                <input type="checkbox" id="recurrence-toggle">
+                <label for="recurrence-toggle">Evento recorrente</label>
+            </div>
+            
+            <div class="recurrence-options" id="recurrence-options">
+                <label>Tipo de recorrência:</label>
+                <div class="recurrence-type-selector">
+                    <div class="recurrence-option">
+                        <input type="radio" id="recurrence-daily" name="recurrence-type" value="daily">
+                        <label for="recurrence-daily">Diário</label>
+                    </div>
+                    <div class="recurrence-option">
+                        <input type="radio" id="recurrence-weekly" name="recurrence-type" value="weekly">
+                        <label for="recurrence-weekly">Semanal</label>
+                    </div>
+                    <div class="recurrence-option">
+                        <input type="radio" id="recurrence-monthly" name="recurrence-type" value="monthly">
+                        <label for="recurrence-monthly">Mensal</label>
+                    </div>
+                    <div class="recurrence-option">
+                        <input type="radio" id="recurrence-yearly" name="recurrence-type" value="yearly">
+                        <label for="recurrence-yearly">Anual</label>
+                    </div>
+                </div>
+                
+                <!-- Opções para recorrência semanal -->
+                <div class="weekly-options" id="weekly-options">
+                    <label>Repetir nos dias:</label>
+                    <div class="days-of-week">
+                        <div class="day-of-week-option">
+                            <input type="checkbox" id="day-sun" value="0">
+                            <label for="day-sun">D</label>
+                        </div>
+                        <div class="day-of-week-option">
+                            <input type="checkbox" id="day-mon" value="1">
+                            <label for="day-mon">S</label>
+                        </div>
+                        <div class="day-of-week-option">
+                            <input type="checkbox" id="day-tue" value="2">
+                            <label for="day-tue">T</label>
+                        </div>
+                        <div class="day-of-week-option">
+                            <input type="checkbox" id="day-wed" value="3">
+                            <label for="day-wed">Q</label>
+                        </div>
+                        <div class="day-of-week-option">
+                            <input type="checkbox" id="day-thu" value="4">
+                            <label for="day-thu">Q</label>
+                        </div>
+                        <div class="day-of-week-option">
+                            <input type="checkbox" id="day-fri" value="5">
+                            <label for="day-fri">S</label>
+                        </div>
+                        <div class="day-of-week-option">
+                            <input type="checkbox" id="day-sat" value="6">
+                            <label for="day-sat">S</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Opções para recorrência mensal -->
+                <div class="monthly-options" id="monthly-options">
+                    <label>Repetir:</label>
+                    <select id="monthly-option">
+                        <option value="same-day">No mesmo dia do mês</option>
+                        <option value="same-weekday">No mesmo dia da semana</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="recurrence-end">Terminar em:</label>
+                    <select id="recurrence-end">
+                        <option value="never">Nunca</option>
+                        <option value="count">Após X ocorrências</option>
+                        <option value="date">Em uma data específica</option>
+                    </select>
+                    <input type="number" id="recurrence-count" placeholder="Número de ocorrências" style="display: none; margin-top: 8px;">
+                    <input type="date" id="recurrence-end-date" style="display: none; margin-top: 8px;">
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button id="save">Salvar</button>
+                <button id="delete">Excluir</button>
+                <button id="close">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <button onclick="limparLocalStorage()" class="btn-limpar">
+        <i class="fas fa-trash-alt"></i> Limpar dados salvos
+    </button>
+
+    <!-- Modal de feriado -->
+    <div class="modal" id="holiday-modal">
+        <div class="holiday-modal-content">
+            <h2><i class="fas fa-flag"></i> Feriado</h2>
+            <div class="holiday-info">
+                <div class="holiday-icon">
+                    <i class="fas fa-flag"></i>
+                </div>
+                <div class="holiday-details">
+                    <div class="holiday-name" id="holiday-modal-name"></div>
+                    <div class="holiday-date" id="holiday-modal-date"></div>
+                </div>
+            </div>
+            <div class="holiday-note">
+                <i class="fas fa-info-circle"></i>
+                Feriados não podem ser editados ou excluídos.
+            </div>
+            <div class="modal-actions">
+                <button id="holiday-modal-add-event" class="add-event-btn">
+                    <i class="fas fa-plus-circle"></i> Adicionar Compromisso
+                </button>
+                <button id="holiday-modal-close">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Elementos DOM
+        const calendarContent = document.getElementById("calendar-content");
+        const monthYear = document.getElementById("month-year");
+        const modal = document.getElementById("modal");
+        const modalDate = document.getElementById("modal-date");
+        const input = document.getElementById("event-input");
+        const eventList = document.getElementById("event-list");
+        const holidaysLoading = document.getElementById("holidays-loading");
+        const holidayCountEl = document.getElementById("holiday-count");
+        const eventCountEl = document.getElementById("event-count");
+        const holidayModal = document.getElementById("holiday-modal");
+        const holidayModalName = document.getElementById("holiday-modal-name");
+        const holidayModalDate = document.getElementById("holiday-modal-date");
+        const holidayModalClose = document.getElementById("holiday-modal-close");
+        const holidayModalAddEvent = document.getElementById("holiday-modal-add-event");
+        const appTitleYear = document.getElementById("current-year");
+        const currentDateDisplay = document.getElementById("current-date-display");
+        const nextHolidayDisplay = document.getElementById("next-holiday-display");
+        const nextHolidayDays = document.getElementById("next-holiday-days");
+        
+        // Botões
+        const saveBtn = document.getElementById("save");
+        const deleteBtn = document.getElementById("delete");
+        const closeBtn = document.getElementById("close");
+        const prevBtn = document.getElementById("prev");
+        const nextBtn = document.getElementById("next");
+        const themeToggle = document.getElementById("theme-toggle");
+        const todayBtn = document.getElementById("today-btn");
+        const refreshHolidaysBtn = document.getElementById("refresh-holidays");
+        const eventListToggle = document.getElementById("event-list-toggle");
+        
+        // Elementos do modal de recorrência
+        const recurrenceToggle = document.getElementById("recurrence-toggle");
+        const recurrenceOptions = document.getElementById("recurrence-options");
+        const recurrenceTypeRadios = document.querySelectorAll('input[name="recurrence-type"]');
+        const weeklyOptions = document.getElementById("weekly-options");
+        const monthlyOptions = document.getElementById("monthly-options");
+        const recurrenceEndSelect = document.getElementById("recurrence-end");
+        const recurrenceCountInput = document.getElementById("recurrence-count");
+        const recurrenceEndDateInput = document.getElementById("recurrence-end-date");
+        
+        // Estado da aplicação
+        let currentDate = new Date();
+        let selectedDate = null;
+        let events = JSON.parse(localStorage.getItem("events")) || {};
+        let recurringEvents = JSON.parse(localStorage.getItem("recurringEvents")) || {};
+        let dynamicHolidays = JSON.parse(localStorage.getItem("dynamicHolidays")) || {};
+        let theme = localStorage.getItem("theme") || "light";
+        let eventListVisible = true;
+        let allHolidays = [];
+        let isAnimating = false;
+
+        // Aplicar tema salvo
+        document.documentElement.setAttribute("data-theme", theme);
+        themeToggle.innerHTML = theme === "dark" 
+            ? '<i class="fas fa-sun"></i>  Tema Claro' 
+            : '<i class="fas fa-moon"></i>  Tema Escuro';
+
+        // Feriados fixos
+        const staticHolidays = {
+            "1-1": "Ano Novo",
+            "21-4": "Tiradentes",
+            "1-5": "Dia do Trabalho",
+            "7-9": "Independência do Brasil",
+            "12-10": "Nossa Senhora Aparecida",
+            "2-11": "Finados",
+            "15-11": "Proclamação da República",
+            "25-12": "Natal"
+        };
+
+        // Atualizar o título da aplicação com o ano atual
+        function updateAppTitle() {
+            const year = currentDate.getFullYear();
+            appTitleYear.textContent = year;
+        }
+
+        // Atualizar a data atual no card
+        function updateCurrentDate() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long' 
+            };
+            const formattedDate = now.toLocaleDateString('pt-BR', options);
+            currentDateDisplay.textContent = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+        }
+
+        // Calcular próximo feriado
+        function updateNextHoliday() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            let nextHoliday = null;
+            let minDaysDiff = Infinity;
+            
+            allHolidays.forEach(holiday => {
+                const holidayDate = new Date(holiday.date);
+                holidayDate.setHours(0, 0, 0, 0);
+                
+                const timeDiff = holidayDate.getTime() - today.getTime();
+                const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                
+                if (daysDiff > 0 && daysDiff < minDaysDiff) {
+                    minDaysDiff = daysDiff;
+                    nextHoliday = holiday;
+                }
+            });
+            
+            if (nextHoliday) {
+                const holidayDate = new Date(nextHoliday.date);
+                const formattedDate = holidayDate.toLocaleDateString('pt-BR', {
+                    day: 'numeric',
+                    month: 'short'
+                }).replace('.', '');
+                
+                nextHolidayDisplay.textContent = `${formattedDate} - ${nextHoliday.name}`;
+                
+                if (minDaysDiff === 1) {
+                    nextHolidayDays.textContent = "Amanhã!";
+                } else {
+                    nextHolidayDays.textContent = `Em ${minDaysDiff} dias`;
+                }
+            } else {
+                nextHolidayDisplay.textContent = "Nenhum feriado encontrado";
+                nextHolidayDays.textContent = "-";
+            }
+        }
+
+        // Buscar feriados da API
+        async function fetchHolidays(year) {
+            holidaysLoading.style.display = "block";
+            
+            try {
+                const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/BR`);
+                if (!response.ok) throw new Error("Falha ao buscar feriados");
+                
+                const holidays = await response.json();
+                const formattedHolidays = {};
+                allHolidays = [];
+                
+                holidays.forEach(holiday => {
+                    const date = new Date(holiday.date);
+                    const adjustedDate = new Date(date.getTime() + (3 * 60 * 60 * 1000));
+                    const key = `${adjustedDate.getDate()}-${adjustedDate.getMonth() + 1}`;
+                    formattedHolidays[key] = holiday.localName;
+                    
+                    allHolidays.push({
+                        date: adjustedDate,
+                        name: holiday.localName,
+                        key: key
+                    });
+                });
+                
+                dynamicHolidays = formattedHolidays;
+                localStorage.setItem("dynamicHolidays", JSON.stringify(dynamicHolidays));
+                
+                holidaysLoading.style.display = "none";
+                renderCalendar();
+                renderEventList();
+                updateNextHoliday();
+                return true;
+            } catch (error) {
+                console.error("Erro ao buscar feriados:", error);
+                holidaysLoading.style.display = "none";
+                dynamicHolidays = staticHolidays;
+                
+                allHolidays = [];
+                const currentYear = currentDate.getFullYear();
+                
+                Object.keys(staticHolidays).forEach(key => {
+                    const [day, month] = key.split("-").map(Number);
+                    const date = new Date(currentYear, month - 1, day);
+                    
+                    allHolidays.push({
+                        date: date,
+                        name: staticHolidays[key],
+                        key: key
+                    });
+                });
+                
+                updateNextHoliday();
+                return false;
+            }
+        }
+
+        // GERAR EVENTOS RECORRENTES PARA UMA DATA ESPECÍFICA
+        function generateRecurringEventsForDate(date) {
+            const dateStr = formatDateKey(date);
+            const generatedEvents = [];
+            
+            // Verificar todos os eventos recorrentes
+            Object.keys(recurringEvents).forEach(recurringId => {
+                const recurringEvent = recurringEvents[recurringId];
+                const startDate = new Date(recurringEvent.startDate);
+                startDate.setHours(0, 0, 0, 0);
+                
+                // Se a data atual for antes da data de início, pular
+                if (date < startDate) return;
+                
+                // Verificar se o evento já expirou
+                if (recurringEvent.endCondition === 'date') {
+                    const endDate = new Date(recurringEvent.endDate);
+                    if (date > endDate) return;
+                } else if (recurringEvent.endCondition === 'count') {
+                    // Calcular quantas ocorrências já foram geradas até esta data
+                    let occurrences = 0;
+                    const tempDate = new Date(startDate);
+                    
+                    while (tempDate <= date && occurrences < recurringEvent.occurrenceCount) {
+                        if (shouldGenerateEventOnDate(recurringEvent, tempDate)) {
+                            occurrences++;
+                            if (formatDateKey(tempDate) === dateStr && occurrences <= recurringEvent.occurrenceCount) {
+                                generatedEvents.push({
+                                    ...recurringEvent,
+                                    originalId: recurringId
+                                });
+                                break;
+                            }
+                        }
+                        tempDate.setDate(tempDate.getDate() + 1);
+                    }
+                    return;
+                }
+                
+                // Verificar se deve gerar evento para esta data
+                if (shouldGenerateEventOnDate(recurringEvent, date)) {
+                    generatedEvents.push({
+                        ...recurringEvent,
+                        originalId: recurringId
+                    });
+                }
+            });
+            
+            return generatedEvents;
+        }
+
+        // VERIFICAR SE DEVE GERAR EVENTO EM UMA DATA
+        function shouldGenerateEventOnDate(recurringEvent, date) {
+            const startDate = new Date(recurringEvent.startDate);
+            startDate.setHours(0, 0, 0, 0);
+            
+            // Se a data for antes da data de início, não gerar
+            if (date < startDate) return false;
+            
+            // Calcular diferença em dias
+            const diffTime = date.getTime() - startDate.getTime();
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            switch (recurringEvent.type) {
+                case 'daily':
+                    // Diário: gerar todos os dias
+                    return true;
+                    
+                case 'weekly':
+                    // Semanal: verificar se é um dos dias da semana selecionados
+                    if (!recurringEvent.daysOfWeek || recurringEvent.daysOfWeek.length === 0) {
+                        // Se não há dias específicos, usar o dia da semana da data inicial
+                        return date.getDay() === startDate.getDay();
+                    }
+                    return recurringEvent.daysOfWeek.includes(date.getDay().toString());
+                    
+                case 'monthly':
+                    // Mensal
+                    if (recurringEvent.monthlyOption === 'same-day') {
+                        // Mesmo dia do mês
+                        return date.getDate() === startDate.getDate();
+                    } else {
+                        // Mesmo dia da semana (ex: toda 2ª segunda-feira)
+                        const startWeek = Math.ceil(startDate.getDate() / 7);
+                        const currentWeek = Math.ceil(date.getDate() / 7);
+                        return date.getDay() === startDate.getDay() && startWeek === currentWeek;
+                    }
+                    
+                case 'yearly':
+                    // Anual: mesmo dia e mês
+                    return date.getDate() === startDate.getDate() && 
+                           date.getMonth() === startDate.getMonth();
+                    
+                default:
+                    return false;
+            }
+        }
+
+        // FORMATAR CHAVE DE DATA
+        function formatDateKey(date) {
+            return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+        }
+
+        // CALCULAR ALTURA DO CALENDÁRIO
+        function calculateCalendarHeight() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            // Calcular número de linhas necessárias
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            
+            // Total de células (dias vazios + dias do mês)
+            const totalCells = firstDay + lastDate;
+            
+            // Calcular número de linhas (cada linha tem 7 células)
+            const rows = Math.ceil(totalCells / 7);
+            
+            // Altura de cada célula + margens
+            const cellHeight = 120; // altura mínima de cada célula
+            const weekdayHeight = 48; // altura dos dias da semana
+            const padding = 16; // padding interno
+            
+            // Calcular altura total
+            const totalHeight = (rows * cellHeight) + weekdayHeight + padding;
+            
+            return totalHeight;
+        }
+
+        // RENDERIZAR CALENDÁRIO COM ANIMAÇÃO
+        function renderCalendar() {
+            if (isAnimating) return;
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            updateAppTitle();
+            monthYear.innerText = currentDate.toLocaleDateString("pt-BR", {
+                month: "long",
+                year: "numeric"
+            }).replace(/^./, c => c.toUpperCase());
+            
+            // Calcular altura necessária
+            const calendarHeight = calculateCalendarHeight();
+            calendarContent.style.height = calendarHeight + 'px';
+            
+            // Criar container do mês atual
+            const monthContainer = document.createElement("div");
+            monthContainer.className = "calendar-month current";
+            monthContainer.dataset.year = year;
+            monthContainer.dataset.month = month;
+            monthContainer.style.height = calendarHeight + 'px';
+            
+            // Adicionar dias da semana
+            const weekdays = document.createElement("div");
+            weekdays.className = "weekdays";
+            weekdays.innerHTML = `
+                <div>Dom</div>
+                <div>Seg</div>
+                <div>Ter</div>
+                <div>Qua</div>
+                <div>Qui</div>
+                <div>Sex</div>
+                <div>Sáb</div>
+            `;
+            monthContainer.appendChild(weekdays);
+            
+            // Adicionar dias
+            const daysContainer = document.createElement("div");
+            daysContainer.className = "days";
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            
+            // Dias vazios no início
+            for (let i = 0; i < firstDay; i++) {
+                daysContainer.appendChild(document.createElement("div"));
+            }
+            
+            // Contadores para estatísticas
+            let holidayCount = 0;
+            let personalEventCount = 0;
+            
+            // Dias do mês
+            for (let day = 1; day <= lastDate; day++) {
+                const dateEl = document.createElement("div");
+                const date = new Date(year, month, day);
+                const dateKey = formatDateKey(date);
+                const holidayKey = `${day}-${month + 1}`;
+                
+                // Número do dia
+                const dayNumber = document.createElement("div");
+                dayNumber.className = "day-number";
+                dayNumber.textContent = day;
+                dateEl.appendChild(dayNumber);
+                
+                // Área de indicadores
+                const dayIndicators = document.createElement("div");
+                dayIndicators.className = "day-indicators";
+                
+                let eventCount = 0;
+                let hasHoliday = false;
+                let hasPersonalEvent = false;
+                
+                // Feriados
+                if (dynamicHolidays[holidayKey]) {
+                    holidayCount++;
+                    hasHoliday = true;
+                    const holidayIndicator = createIndicator("holiday", dynamicHolidays[holidayKey], dateKey, day);
+                    dayIndicators.appendChild(holidayIndicator);
+                    eventCount++;
+                }
+                
+                // Eventos do usuário (regulares)
+                if (events[dateKey]) {
+                    personalEventCount++;
+                    hasPersonalEvent = true;
+                    const eventData = events[dateKey];
+                    const eventIndicator = createIndicator(
+                        eventData.category || "personal", 
+                        eventData.text, 
+                        dateKey, 
+                        day,
+                        eventData.isRecurring
+                    );
+                    dayIndicators.appendChild(eventIndicator);
+                    eventCount++;
+                }
+                
+                // Eventos recorrentes gerados
+                const recurringEventsForDate = generateRecurringEventsForDate(date);
+                recurringEventsForDate.forEach(recurringEvent => {
+                    personalEventCount++;
+                    hasPersonalEvent = true;
+                    const eventIndicator = createIndicator(
+                        recurringEvent.category || "personal", 
+                        recurringEvent.text, 
+                        dateKey, 
+                        day,
+                        true
+                    );
+                    dayIndicators.appendChild(eventIndicator);
+                    eventCount++;
+                });
+                
+                // Se houver mais de 3 indicadores, usar versão compacta
+                if (eventCount > 3) {
+                    dayIndicators.classList.add("compact-indicators");
+                }
+                
+                dateEl.appendChild(dayIndicators);
+                
+                // Estilização
+                if (date.getDay() === 0 || date.getDay() === 6) {
+                    dateEl.classList.add("weekend");
+                }
+                
+                const today = new Date();
+                if (
+                    day === today.getDate() &&
+                    month === today.getMonth() &&
+                    year === today.getFullYear()
+                ) {
+                    dateEl.classList.add("today");
+                }
+                
+                // Configurar clique no dia
+                dateEl.onclick = (e) => {
+                    if (!e.target.closest('.indicator')) {
+                        if (hasHoliday && !hasPersonalEvent) {
+                            openHolidayModal(dateKey, day, dynamicHolidays[holidayKey]);
+                        } else if (!hasHoliday && hasPersonalEvent) {
+                            // Verificar se é um evento recorrente
+                            const recurringEvent = recurringEventsForDate[0];
+                            if (recurringEvent) {
+                                openRecurringEventModal(dateKey, day, recurringEvent);
+                            } else {
+                                openModal(dateKey, day);
+                            }
+                        } else {
+                            openModal(dateKey, day);
+                        }
+                    }
+                };
+                
+                daysContainer.appendChild(dateEl);
+            }
+            
+            monthContainer.appendChild(daysContainer);
+            
+            // Se já existe um calendário, animar a transição
+            const existingMonth = calendarContent.querySelector('.calendar-month.current');
+            if (existingMonth) {
+                isAnimating = true;
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+                
+                // Determinar direção da animação
+                const existingYear = parseInt(existingMonth.dataset.year);
+                const existingMonthNum = parseInt(existingMonth.dataset.month);
+                
+                let animationClass = 'slide-left-enter';
+                let existingAnimationClass = 'slide-left';
+                
+                if (year > existingYear || (year === existingYear && month > existingMonthNum)) {
+                    animationClass = 'slide-right-enter';
+                    existingAnimationClass = 'slide-right';
+                }
+                
+                // Animar mês existente saindo
+                existingMonth.classList.remove('current');
+                existingMonth.classList.add(existingAnimationClass);
+                
+                // Adicionar novo mês
+                monthContainer.classList.remove('current');
+                monthContainer.classList.add(animationClass);
+                calendarContent.appendChild(monthContainer);
+                
+                // Remover mês antigo após animação
+                setTimeout(() => {
+                    existingMonth.remove();
+                    monthContainer.classList.remove(animationClass);
+                    monthContainer.classList.add('current');
+                    
+                    // Atualizar contadores e lista de eventos
+                    holidayCountEl.textContent = holidayCount;
+                    eventCountEl.textContent = personalEventCount;
+                    renderEventList();
+                    
+                    isAnimating = false;
+                    prevBtn.disabled = false;
+                    nextBtn.disabled = false;
+                }, 500);
+            } else {
+                // Primeira renderização
+                calendarContent.appendChild(monthContainer);
+                holidayCountEl.textContent = holidayCount;
+                eventCountEl.textContent = personalEventCount;
+            }
+        }
+
+        // Criar indicador
+        function createIndicator(type, tooltipText, dateKey, day, isRecurring = false) {
+            const indicator = document.createElement("div");
+            indicator.className = `indicator ${type}`;
+            indicator.title = tooltipText;
+            
+            const icon = document.createElement("i");
+            icon.className = type === "holiday" ? "fas fa-flag" : 
+                            type === "work" ? "fas fa-briefcase" :
+                            type === "health" ? "fas fa-heartbeat" :
+                            type === "leisure" ? "fas fa-gamepad" : "fas fa-check";
+            icon.style.pointerEvents = "none";
+            
+            const tooltip = document.createElement("div");
+            tooltip.className = "tooltip";
+            tooltip.textContent = tooltipText + (isRecurring ? " 🔄" : "");
+            tooltip.style.pointerEvents = "none";
+            
+            indicator.appendChild(icon);
+            indicator.appendChild(tooltip);
+            
+            indicator.onclick = (e) => {
+                e.stopPropagation();
+                
+                if (type === "holiday") {
+                    const holidayKey = `${day}-${currentDate.getMonth() + 1}`;
+                    openHolidayModal(dateKey, day, dynamicHolidays[holidayKey]);
+                } else {
+                    openModal(dateKey, day);
+                }
+            };
+            
+            indicator.addEventListener('mouseenter', function() {
+                const tooltip = this.querySelector('.tooltip');
+                if (tooltip) {
+                    tooltip.style.visibility = 'visible';
+                    tooltip.style.opacity = '1';
+                }
+            });
+            
+            indicator.addEventListener('mouseleave', function() {
+                const tooltip = this.querySelector('.tooltip');
+                if (tooltip) {
+                    tooltip.style.visibility = 'hidden';
+                    tooltip.style.opacity = '0';
+                }
+            });
+            
+            return indicator;
+        }
+
+        // Renderizar lista de eventos do mês
+        function renderEventList() {
+            eventList.innerHTML = "";
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth() + 1;
+            
+            const monthEvents = [];
+            
+            // Adicionar feriados do mês
+            Object.keys(dynamicHolidays).forEach(key => {
+                const [day, holidayMonth] = key.split("-").map(Number);
+                if (holidayMonth === month) {
+                    monthEvents.push({
+                        date: new Date(year, month - 1, day),
+                        text: dynamicHolidays[key],
+                        type: 'holiday',
+                        day: day,
+                        isRecurring: false
+                    });
+                }
+            });
+            
+            // Adicionar eventos do usuário do mês
+            Object.keys(events).forEach(dateKey => {
+                const [eventYear, eventMonth, eventDay] = dateKey.split("-").map(Number);
+                
+                if (eventYear === year && eventMonth === month) {
+                    const eventData = events[dateKey];
+                    monthEvents.push({
+                        date: new Date(eventYear, eventMonth - 1, eventDay),
+                        text: eventData.text,
+                        type: eventData.category || 'personal',
+                        day: eventDay,
+                        isRecurring: false
+                    });
+                }
+            });
+            
+            // Adicionar eventos recorrentes do mês
+            for (let day = 1; day <= 31; day++) {
+                try {
+                    const date = new Date(year, month - 1, day);
+                    if (date.getMonth() !== month - 1) break; // Dia inválido
+                    
+                    const recurringEventsForDate = generateRecurringEventsForDate(date);
+                    recurringEventsForDate.forEach(recurringEvent => {
+                        monthEvents.push({
+                            date: date,
+                            text: recurringEvent.text,
+                            type: recurringEvent.category || 'personal',
+                            day: day,
+                            isRecurring: true,
+                            originalId: recurringEvent.originalId
+                        });
+                    });
+                } catch (e) {
+                    break;
+                }
+            }
+            
+            // Ordenar por data
+            monthEvents.sort((a, b) => a.day - b.day);
+            
+            // Adicionar à lista
+            monthEvents.forEach(event => {
+                const listItem = document.createElement("li");
+                listItem.className = `event-list-item ${event.type}-item`;
+                
+                const dateStr = event.date.toLocaleDateString("pt-BR", {
+                    weekday: 'short',
+                    day: '2-digit',
+                    month: 'short'
+                }).replace(/\./g, '');
+                
+                const badgeClass = `${event.type}-badge`;
+                const badgeText = event.type === 'holiday' ? 'Feriado' :
+                                 event.type === 'work' ? 'Trabalho' :
+                                 event.type === 'health' ? 'Saúde' :
+                                 event.type === 'leisure' ? 'Lazer' : 'Pessoal';
+                
+                listItem.innerHTML = `
+                    <div class="event-date">${dateStr}</div>
+                    <div class="event-text">${event.text} 
+                        ${event.isRecurring ? '<span class="recurring-badge"><i class="fas fa-redo"></i> Recorrente</span>' : ''}
+                    </div>
+                    <span class="event-type-badge ${badgeClass}">${badgeText}</span>
+                `;
+                
+                listItem.onclick = () => {
+                    const day = event.day;
+                    const dateKey = `${year}-${month}-${day}`;
+                    
+                    if (event.type === 'holiday') {
+                        const holidayKey = `${day}-${month}`;
+                        openHolidayModal(dateKey, day, dynamicHolidays[holidayKey]);
+                    } else if (event.isRecurring) {
+                        openRecurringEventModal(dateKey, day, event);
+                    } else {
+                        openModal(dateKey, day);
+                    }
+                };
+                
+                eventList.appendChild(listItem);
+            });
+            
+            if (monthEvents.length === 0) {
+                const listItem = document.createElement("li");
+                listItem.className = "event-list-item";
+                listItem.innerHTML = `
+                    <div class="event-text" style="text-align: center; width: 100%;">
+                        <i class="far fa-calendar-times" style="font-size: 1.2em; margin-right: 8px;"></i>
+                        Nenhum compromisso ou feriado este mês
+                    </div>`;
+                eventList.appendChild(listItem);
+            }
+        }
+
+        // Abrir modal para evento recorrente
+        function openRecurringEventModal(dateKey, day, event) {
+            // Para eventos recorrentes, só podemos visualizar
+            alert(`Evento recorrente: ${event.text}\n\nEste é um evento recorrente. Para editá-lo, você precisa excluir a série completa.`);
+        }
+
+        // Abrir modal para adicionar/editar evento
+        function openModal(dateKey, day) {
+            selectedDate = dateKey;
+            const [year, month] = dateKey.split("-");
+            const formattedDate = new Date(year, month - 1, day).toLocaleDateString("pt-BR", {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }).replace(/^./, c => c.toUpperCase());
+            
+            modalDate.innerText = formattedDate;
+            
+            // Verificar se já existe evento nesta data
+            const existingEvent = events[dateKey];
+            if (existingEvent) {
+                input.value = existingEvent.text;
+                document.querySelector(`#category-${existingEvent.category || 'personal'}`).checked = true;
+                
+                // Se for um evento recorrente, mostrar informações
+                if (existingEvent.recurringId) {
+                    recurrenceToggle.checked = true;
+                    recurrenceOptions.classList.add('show');
+                    // Aqui você carregaria as configurações de recorrência
+                }
+                
+                deleteBtn.style.display = "block";
+            } else {
+                input.value = "";
+                document.querySelector('#category-personal').checked = true;
+                recurrenceToggle.checked = false;
+                recurrenceOptions.classList.remove('show');
+                deleteBtn.style.display = "none";
+                
+                // Resetar opções de recorrência
+                document.querySelector('#recurrence-daily').checked = true;
+                weeklyOptions.classList.remove('show');
+                monthlyOptions.classList.remove('show');
+                recurrenceEndSelect.value = 'never';
+                recurrenceCountInput.style.display = 'none';
+                recurrenceEndDateInput.style.display = 'none';
+            }
+            
+            modal.style.display = "flex";
+            input.focus();
+            holidayModal.style.display = "none";
+        }
+
+        // Abrir modal de feriado
+        function openHolidayModal(dateKey, day, holidayName) {
+            selectedDate = dateKey;
+            const [year, month] = dateKey.split("-");
+            const formattedDate = new Date(year, month - 1, day).toLocaleDateString("pt-BR", {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }).replace(/^./, c => c.toUpperCase());
+            
+            holidayModalName.textContent = holidayName;
+            holidayModalDate.textContent = formattedDate;
+            holidayModal.style.display = "flex";
+            modal.style.display = "none";
+        }
+
+        // Configurar eventos do modal de recorrência
+        recurrenceToggle.addEventListener('change', function() {
+            if (this.checked) {
+                recurrenceOptions.classList.add('show');
+            } else {
+                recurrenceOptions.classList.remove('show');
+            }
+        });
+
+        recurrenceTypeRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'weekly') {
+                    weeklyOptions.classList.add('show');
+                    monthlyOptions.classList.remove('show');
+                } else if (this.value === 'monthly') {
+                    weeklyOptions.classList.remove('show');
+                    monthlyOptions.classList.add('show');
+                } else {
+                    weeklyOptions.classList.remove('show');
+                    monthlyOptions.classList.remove('show');
+                }
+            });
+        });
+
+        recurrenceEndSelect.addEventListener('change', function() {
+            if (this.value === 'count') {
+                recurrenceCountInput.style.display = 'block';
+                recurrenceEndDateInput.style.display = 'none';
+            } else if (this.value === 'date') {
+                recurrenceCountInput.style.display = 'none';
+                recurrenceEndDateInput.style.display = 'block';
+            } else {
+                recurrenceCountInput.style.display = 'none';
+                recurrenceEndDateInput.style.display = 'none';
+            }
+        });
+
+        // Salvar evento
+        saveBtn.onclick = () => {
+            if (!input.value.trim()) {
+                alert("Por favor, digite uma descrição para o compromisso.");
+                return;
+            }
+            
+            const category = document.querySelector('input[name="category"]:checked').value;
+            const eventData = {
+                text: input.value.trim(),
+                category: category,
+                date: selectedDate
+            };
+            
+            // Verificar se é evento recorrente
+            if (recurrenceToggle.checked) {
+                const recurrenceType = document.querySelector('input[name="recurrence-type"]:checked').value;
+                const endCondition = recurrenceEndSelect.value;
+                
+                const recurringEvent = {
+                    text: input.value.trim(),
+                    category: category,
+                    startDate: selectedDate,
+                    type: recurrenceType,
+                    endCondition: endCondition
+                };
+                
+                // Configurações específicas por tipo
+                if (recurrenceType === 'weekly') {
+                    const selectedDays = [];
+                    document.querySelectorAll('#weekly-options input[type="checkbox"]:checked').forEach(cb => {
+                        selectedDays.push(cb.value);
+                    });
+                    recurringEvent.daysOfWeek = selectedDays;
+                } else if (recurrenceType === 'monthly') {
+                    recurringEvent.monthlyOption = document.getElementById('monthly-option').value;
+                }
+                
+                if (endCondition === 'count') {
+                    recurringEvent.occurrenceCount = parseInt(recurrenceCountInput.value) || 10;
+                } else if (endCondition === 'date') {
+                    recurringEvent.endDate = recurrenceEndDateInput.value;
+                }
+                
+                // Gerar ID único para o evento recorrente
+                const recurringId = 'recurring_' + Date.now();
+                recurringEvents[recurringId] = recurringEvent;
+                localStorage.setItem("recurringEvents", JSON.stringify(recurringEvents));
+                
+                // Não salvar como evento único
+                delete events[selectedDate];
+            } else {
+                // Evento único
+                events[selectedDate] = eventData;
+                deleteBtn.style.display = "block";
+            }
+            
+            localStorage.setItem("events", JSON.stringify(events));
+            closeModal();
+        };
+
+        // Excluir evento
+        deleteBtn.onclick = () => {
+            if (confirm("Tem certeza que deseja excluir este compromisso?")) {
+                const eventData = events[selectedDate];
+                
+                // Se for um evento de uma série recorrente, perguntar
+                if (eventData && eventData.recurringId) {
+                    if (confirm("Este é um evento recorrente. Deseja excluir apenas este evento ou toda a série?")) {
+                        // Excluir série completa
+                        if (confirm("Tem certeza que deseja excluir TODA a série de eventos recorrentes?")) {
+                            delete recurringEvents[eventData.recurringId];
+                            localStorage.setItem("recurringEvents", JSON.stringify(recurringEvents));
+                        }
+                    } else {
+                        // Excluir apenas este evento
+                        // Marcar como excluído na série
+                        if (!eventData.excludedDates) {
+                            eventData.excludedDates = [];
+                        }
+                        eventData.excludedDates.push(selectedDate);
+                        events[selectedDate] = eventData;
+                        localStorage.setItem("events", JSON.stringify(events));
+                    }
+                } else {
+                    // Evento único
+                    delete events[selectedDate];
+                    localStorage.setItem("events", JSON.stringify(events));
+                }
+                
+                closeModal();
+            }
+        };
+
+        // Fechar modal
+        closeBtn.onclick = closeModal;
+
+        function closeModal() {
+            modal.style.display = "none";
+            renderCalendar();
+        }
+
+        // Fechar modal de feriado
+        holidayModalClose.onclick = () => {
+            holidayModal.style.display = "none";
+        };
+
+        holidayModalAddEvent.onclick = () => {
+            holidayModal.style.display = "none";
+            const [year, month, day] = selectedDate.split("-").map(Number);
+            openModal(selectedDate, day);
+        };
+
+        // Alternar tema
+        themeToggle.onclick = () => {
+            theme = theme === "light" ? "dark" : "light";
+            document.documentElement.setAttribute("data-theme", theme);
+            localStorage.setItem("theme", theme);
+            
+            themeToggle.innerHTML = theme === "dark" 
+                ? '<i class="fas fa-sun"></i>  Tema Claro' 
+                : '<i class="fas fa-moon"></i>  Tema Escuro';
+        };
+
+        // Alternar visibilidade da lista de eventos (mobile)
+        eventListToggle.onclick = () => {
+            const eventListSection = document.querySelector('.event-list-section');
+            eventListVisible = !eventListVisible;
+            
+            if (window.innerWidth <= 767) {
+                eventListSection.style.display = eventListVisible ? 'block' : 'none';
+                eventListToggle.innerHTML = eventListVisible 
+                    ? '<i class="fas fa-list"></i> Ocultar Compromissos' 
+                    : '<i class="fas fa-list"></i> Mostrar Compromissos';
+            }
+        };
+
+        // Navegação do calendário com animação
+        prevBtn.onclick = () => {
+            if (isAnimating) return;
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        };
+
+        nextBtn.onclick = () => {
+            if (isAnimating) return;
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        };
+
+        // Ir para hoje
+        todayBtn.onclick = () => {
+            if (isAnimating) return;
+            currentDate = new Date();
+            renderCalendar();
+            updateCurrentDate();
+            updateNextHoliday();
+        };
+
+        // Atualizar feriados
+        refreshHolidaysBtn.onclick = () => {
+            const year = currentDate.getFullYear();
+            fetchHolidays(year);
+        };
+
+        // Função para limpar localStorage
+        function limparLocalStorage() {
+            if (confirm("Tem certeza que deseja apagar todos os dados salvos?")) {
+                localStorage.clear();
+                events = {};
+                recurringEvents = {};
+                alert("LocalStorage limpo com sucesso!");
+                renderCalendar();
+            }
+        }
+
+        // Fechar modal clicando fora
+        window.onclick = (event) => {
+            if (event.target === modal) closeModal();
+            if (event.target === holidayModal) holidayModal.style.display = "none";
+        };
+
+        // Inicializar
+        document.addEventListener("DOMContentLoaded", () => {
+            updateAppTitle();
+            updateCurrentDate();
+            fetchHolidays(currentDate.getFullYear());
+            renderCalendar();
+            
+            if (window.innerWidth <= 767) {
+                document.querySelector('.event-list-section').style.display = 'none';
+                eventListToggle.innerHTML = '<i class="fas fa-list"></i> Mostrar Compromissos';
+                eventListVisible = false;
+            }
+            
+            setInterval(updateCurrentDate, 60000);
+        });
+    </script>
+</body>
+</html>
