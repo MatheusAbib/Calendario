@@ -290,6 +290,101 @@ body {
     border-color: var(--primary-light);
 }
 
+/* Campo de pesquisa mês/ano */
+.month-year-search {
+    display: flex;
+    align-items: center;
+}
+
+.search-input-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: var(--bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 5px;
+    transition: all 0.2s;
+}
+
+.search-input-group:hover {
+    border-color: var(--primary-light);
+    box-shadow: var(--shadow-sm);
+}
+
+.search-select {
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    min-width: 100px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.search-select:focus {
+    outline: none;
+    background: var(--weekend);
+}
+
+.search-select option {
+    background: var(--card-bg);
+    color: var(--text);
+}
+
+.search-btn {
+    background: var(--primary);
+    color: white;
+    position: relative;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.search-btn::after {
+    content: 'Ir para mês/ano';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.search-btn:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+.search-btn:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+}
+
+.search-btn:active {
+    transform: translateY(0);
+}
+
+
 #today-btn {
     background: var(--accent);
     color: white !important;
@@ -451,18 +546,17 @@ body {
         }
 
 
-        .calendar-container {
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            transition: all 0.3s ease;
-            border: 1px solid var(--card-border);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
+    .calendar-container {
+        background: var(--card-bg);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid var(--card-border);
+        display: flex;
+        flex-direction: column;
+        position: relative; 
+    }
         .calendar-container:hover {
             box-shadow: var(--shadow-lg);
             border-color: var(--primary-light);
@@ -543,20 +637,17 @@ body {
     transform: none;
 }
 
-        .calendar-content {
-            position: relative;
-            min-height: 400px;
-            padding: 0;
-        }
-        
-        .calendar-month {
-            position: relative;
-            width: 100%;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
-            opacity: 1;
-            transform: translateX(0);
-            display: block;
-        }
+.calendar-content {
+    flex: 1;
+    overflow: visible;
+    position: relative;
+    min-height: 400px;
+    height: auto !important; 
+}
+.calendar-month {
+    height: auto !important; /* Remove altura fixa */
+    min-height: 400px;
+}
 
 
         .weekdays {
@@ -586,18 +677,25 @@ body {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             background: var(--card-bg);
+            grid-auto-rows: minmax(80px, auto); 
+
         }
 
         
         .days div {
-            padding: 10px;
-            border: 1px solid rgba(0,0,0,0.05);
+                height: auto; 
+                padding: 8px;
+                transition: min-height 0.3s ease;           
+                border: 1px solid rgba(0,0,0,0.05);
             cursor: pointer;
             position: relative;
-            transition: background 0.2s;
             display: flex;
             flex-direction: column;
             overflow: hidden !important;
+        }
+
+        .days div.with-many-events {
+            min-height: 100px;
         }
 
         .days div:hover {
@@ -621,7 +719,6 @@ body {
     width: 100% !important;
     font-weight: 600;
     font-size: 1rem;
-    margin-bottom: 8px;
     padding: 4px 0;
     position: relative;
 }
@@ -678,7 +775,7 @@ body {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 15px;
+            margin-top: 10px;
             align-items: center;
             justify-content: center;
             min-height: 24px;
@@ -829,7 +926,7 @@ body {
     height: fit-content;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 200px);
+    height: calc(87vh - 200px);
     min-height: 600px;
 }
 
@@ -1106,6 +1203,11 @@ body {
     position: relative;
     max-height: 90vh;
     overflow-y: auto;
+}
+
+.modal-content::-webkit-scrollbar {
+    display: none !important;
+
 }
 
 @keyframes modalSlideIn {
@@ -1742,10 +1844,9 @@ body {
         gap: 4px;
         background: var(--accent);
         color: var(--text);
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 0.7rem;
-        margin-left: 8px;
+        padding: 4px 8px;
+        border-radius: 10px;
+        font-size: 0.65rem;
         font-weight: 600;
         vertical-align: middle;
     }
@@ -1890,11 +1991,13 @@ body {
     align-items: center;
     gap: 20px;
     backdrop-filter: blur(4px);
+    border-radius: 0 0 16px 16px;
 }
 
 .calendar-loading.active {
     display: flex;
 }
+
 
 .calendar-loading-spinner {
     width: 60px;
@@ -1918,7 +2021,7 @@ body {
      .date-consultant {
     background: var(--card-bg);
     border-radius: 20px;
-    padding: 32px;
+    padding: 32px 0 32px;
     margin-top: 30px;
     box-shadow: var(--shadow);
     border: 1px solid var(--card-border);
@@ -2225,6 +2328,14 @@ body {
     display: flex;
 }
 
+.season-legend,
+.indicators-legend {
+    flex-shrink: 0; 
+    position: relative;
+    z-index: 2;
+}
+
+
 .legend-season-item {
     display: flex;
     align-items: center;
@@ -2302,6 +2413,15 @@ body {
 
         @media (max-width: 1024px) {
 
+        .month-year-search {
+                flex: 1;
+                min-width: 200px;
+            }
+            
+            .search-input-group {
+                width: 100%;
+            }
+
               .main-content {
         flex-direction: column;
             }
@@ -2374,9 +2494,23 @@ body {
         }
         
         @media (max-width: 768px) {
+
+    .month-year-search {
+        margin: 10px 0;
+    }
+    
+    .search-input-group {
+        background: var(--weekend);
+        border: 1px solid var(--card-border);
+    }
+    
+        .mobile-toggle-btn{
+                padding: 5px 10px;
+                font-size: 0.85em;
+            }
     .container {
-        padding: 0 16px;
-        gap: 20px;
+        padding: 0 8px;
+        gap: 10px;
     }
     
     .info-cards {
@@ -2527,7 +2661,7 @@ body {
         margin: 0;
         padding: 0;
         border: none;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
     }
     
     .desktop-title {
@@ -2570,6 +2704,8 @@ body {
 }
 
         @media (min-width: 768px) {
+
+
 
             .btn-limpar-mobile {
                 display: none;
@@ -2627,23 +2763,30 @@ body {
                 order: 1;
             }
 
-            .indicator.local, .indicator.facultative, .indicator, .indicator.holiday, .indicator.work{
-                display: none !important;
-            }
-            
             .day-number.with-season > :first-child:not(.season-indicator) {
                 display: block !important;
                 font-size: 1em;
                 font-weight: bold;
                 line-height: 1;
             }
+
+             .days {
+                    grid-auto-rows: minmax(70px, auto);
+                }
+                
+                .days div {
+                    min-height: 70px;
+                }
+                
+                .days div.with-many-events {
+                    min-height: 90px;
+                }
             
             .day-indicators {
                 flex: 1;
                 margin-top: auto;
                 min-height: 20px;
                 max-height: none;
-                align-items: flex-end;
             }
             
             .days div.today .day-number {
@@ -2669,7 +2812,10 @@ body {
                 min-height: 400px !important;
                 height: auto !important;
             }
-            
+                .calendar-loading {
+                border-radius: 0 0 12px 12px;
+            }
+                    
             .calendar-month {
                 height: auto !important;
             }
@@ -2854,10 +3000,15 @@ body {
                 max-width: 95%;
                 padding: 20px;
             }
+
+            .holiday-modal-content{
+                padding: 20px;
+            }
             
             .holiday-info {
                 flex-direction: column;
                 text-align: center;
+                padding: 16px;
                 gap: 10px;
             }
             
@@ -2873,6 +3024,7 @@ body {
             
             .modal-actions button {
                 min-width: 120px;
+                padding: 6px 24px;
             }
 
             .consultant-header p{
@@ -2884,7 +3036,7 @@ body {
             }
             
             .input-with-button {
-                flex-direction: row;
+                flex-direction: column;
             }
             
             .quick-dates {
@@ -2906,6 +3058,19 @@ body {
 
 
         @media (max-width: 480px) {
+
+  .search-input-group {
+        flex-wrap: wrap;
+        padding: 5px;
+    }
+    
+    .search-select {
+        min-width: calc(40% - 2px);
+    }
+    
+    .search-btn {
+        width: 100%;
+    }
 
   .app-header {
         padding: 15px 0;

@@ -1,4 +1,7 @@
- const calendarLoading = document.getElementById("calendar-loading");
+  const searchMonthSelect = document.getElementById('search-month');
+    const searchYearSelect = document.getElementById('search-year');
+    const searchGoBtn = document.getElementById('search-go');
+    const calendarLoading = document.getElementById("calendar-loading");
     const calendarLoadingText = document.getElementById("calendar-loading-text");
     const calendarContent = document.getElementById("calendar-content");
     const monthYear = document.getElementById("month-year");
@@ -398,37 +401,7 @@ function inferHolidayType(holidayName) {
         return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
     }
 
-    function calculateCalendarHeight() {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        
-        const firstDay = new Date(year, month, 1).getDay();
-        const lastDate = new Date(year, month + 1, 0).getDate();
-        const totalCells = firstDay + lastDate;
-        const rows = Math.ceil(totalCells / 7);
-        
-        const viewportHeight = window.innerHeight;
-        const viewportWidth = window.innerWidth;
-        
-        const isMobile = viewportWidth <= 767;
-        
-        if (isMobile) {
-            const baseHeightPerRow = showSeasons ? 75 : 60;
-            const baseHeight = rows * baseHeightPerRow;
-            const weekdayHeight = 40;
-            const padding = 10;
-            return baseHeight + weekdayHeight + padding;
-        } else {
-            const maxHeight = viewportHeight * 0.7;
-            const minCellHeight = 80;
-            const maxCellHeight = 118;
-            
-            let cellHeight = Math.max(minCellHeight, Math.min(maxCellHeight, maxHeight / rows));
-            const weekdayHeight = 48;
-            const padding = 20;
-            return (rows * cellHeight) + weekdayHeight + padding;
-        }
-    }
+
 
     function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, dayType = null) {
         const indicator = document.createElement("div");
@@ -531,6 +504,8 @@ function inferHolidayType(holidayName) {
             toggleSpinner(true, "Carregando calendário...");
         }
         
+        updateSearchFields();
+        
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
         
@@ -540,14 +515,10 @@ function inferHolidayType(holidayName) {
             year: "numeric"
         }).replace(/^./, c => c.toUpperCase());
         
-        const calendarHeight = calculateCalendarHeight();
-        calendarContent.style.height = calendarHeight + 'px';
-        
         const monthContainer = document.createElement("div");
         monthContainer.className = "calendar-month current";
         monthContainer.dataset.year = year;
         monthContainer.dataset.month = month;
-        monthContainer.style.height = calendarHeight + 'px';
         
         const weekdays = document.createElement("div");
         weekdays.className = "weekdays";
@@ -1253,7 +1224,11 @@ function inferHolidayType(holidayName) {
         updateCurrentDate();
         updateLiveClock();
         updateYearProgress();
+        
     }
+
+    populateYearSelect();
+    updateSearchFields();
     
     // Chamar imediatamente
     initializeDateTime();
@@ -1332,9 +1307,38 @@ function inferHolidayType(holidayName) {
                 seasonLegend.classList.remove('show');
             }
         }
+
         
         renderCalendar(true);
     });
+
+        searchGoBtn.addEventListener('click', goToSearchedMonth);
+
+        // Também permitir pesquisa com Enter nos campos
+        searchMonthSelect.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                goToSearchedMonth();
+            }
+        });
+
+        searchYearSelect.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                goToSearchedMonth();
+            }
+        });
+
+        // Atualizar campos de pesquisa quando navegar com botões
+        prevBtn.addEventListener('click', () => {
+            setTimeout(updateSearchFields, 100);
+        });
+
+        nextBtn.addEventListener('click', () => {
+            setTimeout(updateSearchFields, 100);
+        });
+
+        todayBtn.addEventListener('click', () => {
+            setTimeout(updateSearchFields, 100);
+        });
     
     // Fallback de segurança para data
     setTimeout(() => {
@@ -1824,3 +1828,91 @@ function createClockElements() {
     
     appTitle.insertAdjacentHTML('afterend', clockHTML);
 }
+
+function populateYearSelect() {
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 10;
+    const endYear = currentYear + 10;
+    
+    searchYearSelect.innerHTML = '<option value="">Ano</option>';
+    
+    for (let year = startYear; year <= endYear; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        searchYearSelect.appendChild(option);
+    }
+    
+    searchYearSelect.value = currentYear;
+}
+
+function updateSearchFields() {
+    searchMonthSelect.value = currentDate.getMonth();
+    searchYearSelect.value = currentDate.getFullYear();
+}
+
+function goToSearchedMonth() {
+    const selectedMonth = searchMonthSelect.value;
+    const selectedYear = searchYearSelect.value;
+    
+    if (selectedMonth === "" || selectedYear === "") {
+        showModalMessage("Campos obrigatórios", "Por favor, selecione um mês e um ano.", 'warning');
+        return;
+    }
+    
+    currentDate = new Date(selectedYear, selectedMonth, 1);
+    
+    toggleSpinner(true, "Indo para " + getMonthName(selectedMonth) + " de " + selectedYear);
+    
+    setTimeout(() => {
+        renderCalendar();
+        updateSearchFields(); 
+        toggleSpinner(false);
+        
+        
+    }, 500);
+}
+
+function getMonthName(monthIndex) {
+    const months = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+    return months[monthIndex] || '';
+}
+
+function handleSearchKeyPress(e) {
+    if (e.key === 'Enter') {
+        goToSearchedMonth();
+    }
+}
+
+function setupSearchAutoComplete() {
+    // Quando selecionar um ano, sugerir o mês atual se não houver seleção
+    searchYearSelect.addEventListener('change', function() {
+        if (searchMonthSelect.value === "" && this.value !== "") {
+            const currentMonth = new Date().getMonth();
+            searchMonthSelect.value = currentMonth;
+        }
+    });
+    
+    // Quando selecionar um mês, sugerir o ano atual se não houver seleção
+    searchMonthSelect.addEventListener('change', function() {
+        if (searchYearSelect.value === "" && this.value !== "") {
+            const currentYear = new Date().getFullYear();
+            searchYearSelect.value = currentYear;
+        }
+    });
+}
+
+searchGoBtn.addEventListener('click', goToSearchedMonth);
+searchMonthSelect.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        goToSearchedMonth();
+    }
+});
+searchYearSelect.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        goToSearchedMonth();
+    }
+});

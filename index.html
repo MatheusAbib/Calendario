@@ -102,6 +102,37 @@
     <button id="season-toggle">
         <i class="fas fa-leaf"></i> Estações
     </button>
+    
+    <!-- Campo de pesquisa de mês/ano -->
+    <div class="month-year-search">
+        <div class="search-input-group">
+            <select id="search-month" class="search-select">
+                <option value="">Mês</option>
+                <option value="0">Janeiro</option>
+                <option value="1">Fevereiro</option>
+                <option value="2">Março</option>
+                <option value="3">Abril</option>
+                <option value="4">Maio</option>
+                <option value="5">Junho</option>
+                <option value="6">Julho</option>
+                <option value="7">Agosto</option>
+                <option value="8">Setembro</option>
+                <option value="9">Outubro</option>
+                <option value="10">Novembro</option>
+                <option value="11">Dezembro</option>
+            </select>
+            
+            <select id="search-year" class="search-select">
+                <option value="">Ano</option>
+                <!-- Os anos serão preenchidos via JavaScript -->
+            </select>
+            
+            <button id="search-go" class="search-btn" title="Ir para mês/ano">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+    
     <button id="event-list-toggle">
         <i class="fas fa-list"></i> Compromissos
     </button>
@@ -430,6 +461,6 @@
         </div>
     </div>
 
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
