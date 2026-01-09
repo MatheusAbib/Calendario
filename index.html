@@ -9,64 +9,110 @@
 </head>
 <body>
     <div class="container">
-        <header class="app-header">
-            <h1 id="app-title">Calendário de <span id="current-year"></span></h1>
-            <div class="controls">
-                <button id="theme-toggle" class="theme-toggle">
-                     Tema
-                </button>
-                <button id="today-btn">
-                    <i class="fas fa-calendar-day"></i> Hoje
-                </button>
-                <button id="event-list-toggle">
-                    <i class="fas fa-list"></i> Compromissos
-                </button>
-                <button id="refresh-holidays" style="display: none;">
-                    <i class="fas fa-globe"></i> Atualizar Feriados
-                </button>
-                <button id="season-toggle">
-                    <i class="fas fa-leaf"></i> Estações
-                </button>
-            </div>
-        </header>
-
-        <div class="info-cards">
-            <div class="info-card">
-                <div class="info-card-icon">
-                    <i class="fas fa-calendar-day"></i>
-                </div>
-                <div class="info-card-content">
-                    <div class="info-card-title">HOJE</div>
-                    <div class="info-card-value" id="current-date-display">Carregando...</div>
-                </div>
+<header class="app-header">
+    <div class="header-content">
+        <div class="header-left">
+            <div class="app-title">
+                <h1>Calendário de <span id="current-year"></span></h1>
+                <div class="header-current-date" id="header-current-date">Carregando...</div>
             </div>
             
-            <div class="info-card holiday-card">
-                <div class="info-card-icon">
-                    <i class="fas fa-flag"></i>
-                </div>
-                <div class="info-card-content">
-                    <div class="info-card-title">PRÓXIMO FERIADO</div>
-                    <div class="info-card-value" id="next-holiday-display">Carregando...</div>
-                    <div class="info-card-subtitle" id="next-holiday-days">-</div>
-                </div>
-            </div>
-            <div class="info-card">
-                <div class="info-card-icon" style="background: linear-gradient(135deg, #3498db, #2980b9);">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="info-card-content">
-                    <div class="info-card-title">ANO DECORRIDO</div>
-                    <div class="info-card-value" id="year-progress-display">Carregando...</div>
-                    <div class="info-card-subtitle" id="year-progress-days">-</div>
+            <div class="clock-container">
+                <div id="live-clock-container">
+                    <div id="live-clock" class="live-clock"></div>
+                    <div id="live-date" class="live-date"></div>
+                    <select id="timezone-select" class="timezone-select">
+                        <option value="America/Sao_Paulo">BRT (Brasília)</option>
+                        <option value="America/Manaus">AMT (Manaus)</option>
+                        <option value="America/Fortaleza">BRT (Fortaleza)</option>
+                        <option value="America/Recife">BRT (Recife)</option>
+                        <option value="America/Bahia">BRT (Bahia)</option>
+                        <option value="America/Belem">BRT (Belém)</option>
+                        <option value="America/Cuiaba">AMT (Cuiabá)</option>
+                        <option value="America/Campo_Grande">AMT (Campo Grande)</option>
+                        <option value="America/Porto_Velho">AMT (Porto Velho)</option>
+                        <option value="America/Rio_Branco">ACT (Acre)</option>
+                        <option value="America/Santarem">BRT (Santarém)</option>
+                        <option value="America/Maceio">BRT (Maceió)</option>
+                    </select>
                 </div>
             </div>
         </div>
+        
+        <div class="header-actions">
+            <button id="theme-toggle" class="theme-toggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<div class="info-cards">
+    <div class="info-card">
+        <div class="info-card-icon">
+            <i class="fas fa-calendar-day"></i>
+        </div>
+        <div class="info-card-content">
+            <div class="info-card-title">HOJE</div>
+            <div class="info-card-value" id="current-date-display">Carregando...</div>
+            <div class="info-card-subtitle">
+                <i class="fas fa-clock"></i>
+                <span id="current-time-display">--:--:--</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="info-card holiday-card">
+        <div class="info-card-icon">
+            <i class="fas fa-flag"></i>
+        </div>
+        <div class="info-card-content">
+            <div class="info-card-title">PRÓXIMO FERIADO</div>
+            <div class="info-card-value" id="next-holiday-display">Carregando...</div>
+            <div class="info-card-subtitle" id="next-holiday-days">
+                <i class="fas fa-calendar-alt"></i>
+                <span>-</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="info-card">
+        <div class="info-card-icon">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="info-card-content">
+            <div class="info-card-title">ANO DECORRIDO</div>
+            <div class="info-card-value" id="year-progress-display">Carregando...</div>
+            <div class="info-card-subtitle" id="year-progress-days">
+                <i class="fas fa-calendar-check"></i>
+                <span>-</span>
+            </div>
+            <div class="year-progress">
+                <div class="year-progress-fill" id="year-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="controls">
+    <button id="today-btn" class="today-btn">
+        <i class="fas fa-calendar-day"></i> Hoje
+    </button>
+
+    <button id="season-toggle">
+        <i class="fas fa-leaf"></i> Estações
+    </button>
+    <button id="event-list-toggle">
+        <i class="fas fa-list"></i> Compromissos
+    </button>
+    <button id="refresh-holidays" style="display: none;">
+        <i class="fas fa-sync-alt"></i> Atualizar Feriados
+    </button>
+</div>
 
         <div class="main-content">
             <section class="calendar-section">
                 <div class="calendar-container">
-
                     <button onclick="limparLocalStorage()" class="btn-limpar-mobile" title="Limpar dados salvos">
                         <i class="fas fa-trash-alt"></i>
                     </button>
@@ -80,19 +126,48 @@
                         </button>
                     </header>
 
-                    <div class="calendar-content" id="calendar-content">
-
-                    </div>
+                    <div class="calendar-content" id="calendar-content"></div>
 
                     <div class="calendar-loading" id="calendar-loading">
                         <div class="calendar-loading-spinner"></div>
                         <div class="calendar-loading-text" id="calendar-loading-text">Atualizando...</div>
                     </div>
+
+                    <div class="season-legend" id="season-legend">
+                        <div class="legend-season-item">
+                            <div class="legend-season-dot spring"></div>
+                            <span>Primavera</span>
+                        </div>
+                        <div class="legend-season-item">
+                            <div class="legend-season-dot summer"></div>
+                            <span>Verão</span>
+                        </div>
+                        <div class="legend-season-item">
+                            <div class="legend-season-dot autumn"></div>
+                            <span>Outono</span>
+                        </div>
+                        <div class="legend-season-item">
+                            <div class="legend-season-dot winter"></div>
+                            <span>Inverno</span>
+                        </div>
+                    </div>
                     
-                    <div class="indicators-legend">
+                   <div class="indicators-legend">
                         <div class="legend-item">
                             <div class="legend-dot holiday"></div>
-                            <span>Feriado</span>
+                            <span>Feriado Nacional</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot facultative"></div>
+                            <span>Ponto Facultativo</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot religious"></div>
+                            <span>Feriado Religioso</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot local"></div>
+                            <span>Feriado Local</span>
                         </div>
                         <div class="legend-item">
                             <div class="legend-dot personal"></div>
@@ -114,67 +189,72 @@
                 </div>
             </section>
 
-            <section class="event-list-section">
-                <div class="event-list-container">
-                    <h3><i class="fas fa-tasks"></i> Compromissos do Mês</h3>
-                    
-                    <div class="event-list-header">
-                        <div class="event-stats">
-                            <div class="stat">
-                                <div class="stat-dot" style="background: var(--holiday-color);"></div>
-                                <span id="holiday-count">0</span>
-                            </div>
-                            <div class="stat">
-                                <div class="stat-dot" style="background: var(--personal-event);"></div>
-                                <span id="event-count">0</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="loading" id="holidays-loading">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Carregando feriados...</p>
-                    </div>
-                    <ul id="event-list">
-
-                    </ul>
+         <section class="event-list-section">
+    <div class="event-list-container">
+        <div class="mobile-event-list-header">
+            <h3><i class="fas fa-tasks"></i> Compromissos do Mês</h3>
+            <button id="mobile-event-toggle" class="mobile-toggle-btn">
+                <i class="fas fa-eye-slash"></i> Ocultar
+            </button>
+        </div>
+        
+        <h3 class="desktop-title"><i class="fas fa-tasks"></i> Compromissos do Mês</h3>
+        
+        <div class="event-list-header">
+            <div class="event-stats">
+                <div class="stat holiday-stat">
+                    <div class="stat-dot" style="background: var(--holiday-color);"></div>
+                    <span id="holiday-count">0</span> Feriados
                 </div>
-            </section>
+                <div class="stat event-stat">
+                    <div class="stat-dot" style="background: var(--personal-event);"></div>
+                    <span id="event-count">0</span> Compromissos
+                </div>
+            </div>
+        </div>
+        
+        <div class="loading" id="holidays-loading">
+            <div class="loading-spinner"></div>
+            <p>Carregando feriados...</p>
+        </div>
+        
+        <ul id="event-list"></ul>
+    </div>
+</section>
         </div>
 
-        <!-- Consultor de Data -->
-<div class="date-consultant">
-    <div class="consultant-header">
-        <h3><i class="fas fa-calendar-alt"></i> Consultor de Data</h3>
-        <p>Descubra em qual dia da semana cai qualquer data</p>
-    </div>
-    
-    <div class="consultant-content">
-        <div class="input-group">
-            <label for="consultant-date"><i class="far fa-calendar"></i> Digite uma data:</label>
-            <div class="input-with-button">
-                <input type="date" id="consultant-date" value="">
-                <button id="consultant-check">
-                    <i class="fas fa-search"></i> Consultar
-                </button>
+        <div class="date-consultant">
+            <div class="consultant-header">
+                <h3><i class="fas fa-calendar-alt"></i> Consultor de Data</h3>
+                <p>Descubra em qual dia da semana cai qualquer data</p>
+            </div>
+            
+            <div class="consultant-content">
+                <div class="input-group">
+                    <label for="consultant-date"><i class="far fa-calendar"></i> Digite uma data:</label>
+                    <div class="input-with-button">
+                        <input type="date" id="consultant-date" value="">
+                        <button id="consultant-check">
+                            <i class="fas fa-search"></i> Consultar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="consultant-result" id="consultant-result">
+                    <div class="result-placeholder">
+                        <i class="far fa-calendar-check"></i>
+                        <p>O resultado será exibido aqui</p>
+                    </div>
+                </div>
+                
+                <div class="quick-dates">
+                    <button class="quick-date-btn" data-days="0">Hoje</button>
+                    <button class="quick-date-btn" data-days="7">Daqui 1 semana</button>
+                    <button class="quick-date-btn" data-days="30">Daqui 1 mês</button>
+                    <button class="quick-date-btn" data-days="365">Daqui 1 ano</button>
+                </div>
             </div>
         </div>
-        
-        <div class="consultant-result" id="consultant-result">
-            <div class="result-placeholder">
-                <i class="far fa-calendar-check"></i>
-                <p>O resultado será exibido aqui</p>
-            </div>
-        </div>
-        
-        <div class="quick-dates">
-            <button class="quick-date-btn" data-days="0">Hoje</button>
-            <button class="quick-date-btn" data-days="7">Daqui 1 semana</button>
-            <button class="quick-date-btn" data-days="30">Daqui 1 mês</button>
-            <button class="quick-date-btn" data-days="365">Daqui 1 ano</button>
-        </div>
-    </div>
-</div>
     </div>
 
     <div class="modal" id="modal">
@@ -308,16 +388,15 @@
         </div>
     </div>
 
-    <button onclick="limparLocalStorage()" class="btn-limpar">
-        <i class="fas fa-trash-alt"></i> Limpar dados salvos
-    </button>
+<button onclick="limparLocalStorage()" class="btn-limpar">
+    <i class="fas fa-trash-alt"></i> Limpar Dados Salvos
+</button>
 
-    
     <div class="modal" id="holiday-modal">
         <div class="holiday-modal-content">
             <h2><i class="fas fa-flag"></i> Feriado</h2>
-            <div class="holiday-info">
-                <div class="holiday-icon">
+            <div class="holiday-info" id="holiday-info">
+                <div class="holiday-icon" id="holiday-icon">
                     <i class="fas fa-flag"></i>
                 </div>
                 <div class="holiday-details">
@@ -338,18 +417,18 @@
         </div>
     </div>
 
-<div class="modal" id="confirm-modal">
-    <div class="modal-content">
-        <h2 id="confirm-title"><i class="fas fa-exclamation-triangle"></i> Confirmação</h2>
-        <div class="form-group">
-            <p id="confirm-message">Tem certeza que deseja prosseguir?</p>
-        </div>
-        <div class="modal-actions">
-            <button id="confirm-yes" class="confirm-btn" style="background: var(--primary); color: white;">Sim</button>
-            <button id="confirm-no" class="confirm-btn" style="background: var(--event-list-bg); color: var(--text);">Não</button>
+    <div class="modal" id="confirm-modal">
+        <div class="modal-content">
+            <h2 id="confirm-title"><i class="fas fa-exclamation-triangle"></i> Confirmação</h2>
+            <div class="form-group">
+                <p id="confirm-message">Tem certeza que deseja prosseguir?</p>
+            </div>
+            <div class="modal-actions">
+                <button id="confirm-yes" class="confirm-btn" style="background: var(--primary); color: white;">Sim</button>
+                <button id="confirm-no" class="confirm-btn" style="background: var(--event-list-bg); color: var(--text);">Não</button>
+            </div>
         </div>
     </div>
-</div>
 
 <script src="script.js"></script>
 </body>
