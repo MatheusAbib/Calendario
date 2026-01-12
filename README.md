@@ -2,11 +2,9 @@
 
 Uma aplicação web completa de calendário com gerenciamento inteligente de compromissos, feriados nacionais e eventos recorrentes. Desenvolvido com foco em experiência do usuário, performance e design moderno.
 
-![Preview](https://img.shields.io/badge/Preview-Online-brightgreen) ![Status](https://img.shields.io/badge/Status-Ativo-success) ![Versão](https://img.shields.io/badge/Versão-2.0.1-blue) ![License](https://img.shields.io/badge/License-MIT-green)
 
 ## ✨ Demonstração
 
-🔗 **Acesse online:** [Link para demonstração](#)  
 📱 **Totalmente responsivo** para desktop, tablet e mobile  
 🎨 **Temas:** Claro e Escuro com troca automática  
 ⚡ **Performance:** Carregamento rápido, otimizado para offline
@@ -42,7 +40,6 @@ Uma aplicação web completa de calendário com gerenciamento inteligente de com
 - ✅ Próximo feriado destacado no painel informativo
 
 ### 🎨 **Interface & UX**
-- ✅ **Design moderno** com gradientes e sombras
 - ✅ **Temas claro/escuro** com persistência
 - ✅ **Animações suaves** em todas as interações
 - ✅ **Feedback visual** em tempo real
@@ -90,9 +87,3 @@ Uma aplicação web completa de calendário com gerenciamento inteligente de com
 - ⚡ **JavaScript modular** organizado em funções
 - 💾 **Persistência** via localStorage API
 
-## 🚀 Como Usar
-
-### 1. Clone o repositório
-```bash
-git clone https://github.com/seu-usuario/calendario-2026.git
-cd calendario-2026
