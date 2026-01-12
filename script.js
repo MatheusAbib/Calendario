@@ -1,4 +1,4 @@
-  const searchMonthSelect = document.getElementById('search-month');
+    const searchMonthSelect = document.getElementById('search-month');
     const searchYearSelect = document.getElementById('search-year');
     const searchGoBtn = document.getElementById('search-go');
     const calendarLoading = document.getElementById("calendar-loading");
@@ -46,6 +46,24 @@
     const confirmMessage = document.getElementById("confirm-message");
     const confirmYesBtn = document.getElementById("confirm-yes");
     const confirmNoBtn = document.getElementById("confirm-no");
+
+
+    const howToUseModal = document.getElementById('how-to-use-modal');
+    const howToUseClose = document.getElementById('how-to-use-close');
+    const howToUseUnderstood = document.getElementById('how-to-use-understood');
+    const contactModal = document.getElementById('contact-modal');
+    const contactClose = document.getElementById('contact-close');
+    const contactUnderstood = document.getElementById('contact-understood');
+    const headerHelpBtn = document.getElementById('header-help-btn');
+    const headerContactBtn = document.getElementById('header-contact-btn');
+
+
+        const dayModal = document.getElementById('day-modal');
+        const dayModalTitle = document.getElementById('day-modal-title');
+        const dayEventsContainer = document.getElementById('day-events-container');
+        const dayModalNote = document.getElementById('day-modal-note');
+        const dayModalAddEvent = document.getElementById('day-modal-add-event');
+        const dayModalClose = document.getElementById('day-modal-close');
 
     let currentDate = new Date();
     let selectedDate = null;
@@ -130,18 +148,15 @@ function updateCurrentDate() {
         const formattedDate = now.toLocaleDateString('pt-BR', options);
         const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
         
-        // Atualizar no card HOJE
         if (currentDateDisplay) {
             currentDateDisplay.textContent = capitalizedDate;
         }
         
-        // Atualizar no header (opcional - se quiser manter)
         if (headerCurrentDateDisplay) {
             headerCurrentDateDisplay.textContent = capitalizedDate;
         }
         
     } catch (error) {
-        // Fallback sem timezone
         const optionsFallback = { 
             weekday: 'long', 
             day: 'numeric', 
@@ -322,44 +337,62 @@ function inferHolidayType(holidayName) {
     return 'Feriado Nacional';
 }
 
-    function generateRecurringEventsForDate(date) {
-        const dateStr = formatDateKey(date);
-        const generatedEvents = [];
+function generateRecurringEventsForDate(date) {
+    const dateStr = formatDateKey(date);
+    const generatedEvents = [];
+    
+    Object.keys(recurringEvents).forEach(recurringId => {
+        const recurringEvent = recurringEvents[recurringId];
+        const startDate = new Date(recurringEvent.startDate);
+        startDate.setHours(0, 0, 0, 0);
         
-        Object.keys(recurringEvents).forEach(recurringId => {
-            const recurringEvent = recurringEvents[recurringId];
-            const startDate = new Date(recurringEvent.startDate);
-            startDate.setHours(0, 0, 0, 0);
+        if (recurringEvent.excludedDates && recurringEvent.excludedDates.includes(dateStr)) {
+            return; 
+        }
+        
+        if (date < startDate) return;
+        
+        if (recurringEvent.endCondition === 'date') {
+            const endDate = new Date(recurringEvent.endDate);
+            if (date > endDate) return;
+        } else if (recurringEvent.endCondition === 'count') {
+            let occurrences = 0;
+            const tempDate = new Date(startDate);
             
-            if (date < startDate) return;
-            
-            if (recurringEvent.endCondition === 'date') {
-                const endDate = new Date(recurringEvent.endDate);
-                if (date > endDate) return;
-            } else if (recurringEvent.endCondition === 'count') {
-                let occurrences = 0;
-                const tempDate = new Date(startDate);
-                
-                while (tempDate <= date && occurrences < recurringEvent.occurrenceCount) {
-                    if (shouldGenerateEventOnDate(recurringEvent, tempDate)) {
-                        occurrences++;
-                        if (formatDateKey(tempDate) === dateStr && occurrences <= recurringEvent.occurrenceCount) {
-                            generatedEvents.push({ ...recurringEvent, originalId: recurringId });
-                            break;
-                        }
-                    }
+            while (tempDate <= date && occurrences < recurringEvent.occurrenceCount) {
+                const tempDateStr = formatDateKey(tempDate);
+                if (recurringEvent.excludedDates && recurringEvent.excludedDates.includes(tempDateStr)) {
                     tempDate.setDate(tempDate.getDate() + 1);
+                    continue;
                 }
-                return;
+                
+                if (shouldGenerateEventOnDate(recurringEvent, tempDate)) {
+                    occurrences++;
+                    if (formatDateKey(tempDate) === dateStr && occurrences <= recurringEvent.occurrenceCount) {
+                        generatedEvents.push({ 
+                            ...recurringEvent, 
+                            originalId: recurringId,
+                            excludedDates: recurringEvent.excludedDates || []
+                        });
+                        break;
+                    }
+                }
+                tempDate.setDate(tempDate.getDate() + 1);
             }
-            
-            if (shouldGenerateEventOnDate(recurringEvent, date)) {
-                generatedEvents.push({ ...recurringEvent, originalId: recurringId });
-            }
-        });
+            return;
+        }
         
-        return generatedEvents;
-    }
+        if (shouldGenerateEventOnDate(recurringEvent, date)) {
+            generatedEvents.push({ 
+                ...recurringEvent, 
+                originalId: recurringId,
+                excludedDates: recurringEvent.excludedDates || []
+            });
+        }
+    });
+    
+    return generatedEvents;
+}
 
     function shouldGenerateEventOnDate(recurringEvent, date) {
         const startDate = new Date(recurringEvent.startDate);
@@ -403,18 +436,24 @@ function inferHolidayType(holidayName) {
 
 
 
-    function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, dayType = null) {
-        const indicator = document.createElement("div");
-        indicator.title = tooltipText;
-        
-        let indicatorType = type;
-        if (dayType && dayTypes[dayType]) {
-            indicatorType = dayTypes[dayType].cssClass;
-            indicator.className = `indicator ${indicatorType}`;
-            indicator.style.background = `linear-gradient(135deg, ${dayTypes[dayType].color}, ${darkenColor(dayTypes[dayType].color, 20)})`;
-        } else {
-            indicator.className = `indicator ${type}`;
-        }
+function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, recurringId = null, dayType = null) {
+    const indicator = document.createElement("div");
+    indicator.title = tooltipText;
+    
+    if (isRecurring && recurringId) {
+        indicator.setAttribute('data-recurring-id', recurringId);
+        indicator.setAttribute('data-recurring', 'true');
+        indicator.setAttribute('data-event-text', tooltipText);
+    }
+    
+    let indicatorType = type;
+    if (dayType && dayTypes[dayType]) {
+        indicatorType = dayTypes[dayType].cssClass;
+        indicator.className = `indicator ${indicatorType}`;
+        indicator.style.background = `linear-gradient(135deg, ${dayTypes[dayType].color}, ${darkenColor(dayTypes[dayType].color, 20)})`;
+    } else {
+        indicator.className = `indicator ${type}`;
+    }
         
         const icon = document.createElement("i");
         if (dayType && dayTypes[dayType]) {
@@ -461,24 +500,54 @@ function inferHolidayType(holidayName) {
         }
         
         indicator.onclick = (e) => {
-            e.stopPropagation();
+        e.stopPropagation();
+        
+        if (type === "holiday" || dayType) {
+            const holidayKey = `${day}-${currentDate.getMonth() + 1}`;
+            let holidayData = dynamicHolidays[holidayKey];
             
-            if (type === "holiday" || dayType) {
-                const holidayKey = `${day}-${currentDate.getMonth() + 1}`;
-                let holidayData = dynamicHolidays[holidayKey];
-                
-                if (typeof holidayData === 'string') {
-                    holidayData = {
-                        name: holidayData,
-                        type: inferHolidayType(holidayData)
-                    };
-                }
-                
-                openHolidayModal(dateKey, day, holidayData);
-            } else {
-                openModal(dateKey, day);
+            if (typeof holidayData === 'string') {
+                holidayData = {
+                    name: holidayData,
+                    type: inferHolidayType(holidayData)
+                };
             }
-        };
+            
+            openHolidayModal(dateKey, day, holidayData);
+        } else if (isRecurring) {
+            const recurringId = indicator.getAttribute('data-recurring-id');
+            const eventText = indicator.getAttribute('data-event-text') || tooltipText;
+            
+            if (recurringId) {
+                openRecurringEventModal(dateKey, day, {
+                    text: eventText,
+                    category: type,
+                    originalId: recurringId,
+                    isRecurring: true
+                });
+            } else {
+                const date = new Date(dateKey.replace(/-/g, '/'));
+                const recurringEventsForDate = generateRecurringEventsForDate(date);
+                
+                const recurringEvent = recurringEventsForDate.find(ev => 
+                    ev.text === eventText || ev.category === type
+                );
+                
+                if (recurringEvent) {
+                    openRecurringEventModal(dateKey, day, {
+                        text: recurringEvent.text || eventText,
+                        category: recurringEvent.category || type,
+                        originalId: recurringEvent.originalId,
+                        isRecurring: true
+                    });
+                } else {
+                    openModal(dateKey, day);
+                }
+            }
+        } else {
+            openModal(dateKey, day);
+        }
+    };
         
         indicator.addEventListener('mouseenter', function() {
             const tooltip = this.querySelector('.tooltip');
@@ -585,20 +654,31 @@ function inferHolidayType(holidayName) {
                 eventCount++;
             }
             
-            if (events[dateKey]) {
-                personalEventCount++;
-                hasPersonalEvent = true;
-                const eventData = events[dateKey];
-                const eventIndicator = createIndicator(
-                    eventData.category || "personal", 
-                    eventData.text, 
-                    dateKey, 
-                    day,
-                    eventData.isRecurring || eventData.recurringId
-                );
-                dayIndicators.appendChild(eventIndicator);
-                eventCount++;
+        if (events[dateKey]) {
+            personalEventCount++;
+            hasPersonalEvent = true;
+            const eventData = events[dateKey];
+            
+            const isRecurringEvent = eventData.recurringId || eventData.isFromRecurring;
+            
+            const eventIndicator = createIndicator(
+                eventData.category || "personal", 
+                eventData.text, 
+                dateKey, 
+                day,
+                isRecurringEvent, 
+                eventData.originalRecurringId 
+            );
+            
+            if (isRecurringEvent) {
+                eventIndicator.setAttribute('data-recurring-id', eventData.originalRecurringId || '');
+                eventIndicator.setAttribute('data-recurring', 'true');
+                eventIndicator.setAttribute('data-event-text', eventData.text);
             }
+            
+            dayIndicators.appendChild(eventIndicator);
+            eventCount++;
+        }
             
             const recurringEventsForDate = generateRecurringEventsForDate(date);
             recurringEventsForDate.forEach(recurringEvent => {
@@ -634,53 +714,13 @@ function inferHolidayType(holidayName) {
                 dateEl.classList.add("today");
             }
             
-            dateEl.onclick = (e) => {
-                if (!e.target.closest('.indicator') && !e.target.closest('.season-indicator')) {
-                    const hasRealEvents = events[dateKey] || recurringEventsForDate.length > 0;
-                    
-                    if (hasHoliday && !hasRealEvents) {
-                        let holidayData = dynamicHolidays[holidayKey];
-                        
-                        if (typeof holidayData === 'string') {
-                            holidayData = {
-                                name: holidayData,
-                                type: inferHolidayType(holidayData)
-                            };
-                        }
-                        
-                        openHolidayModal(dateKey, day, holidayData);
-                    } else if (!hasHoliday && hasRealEvents) {
-                        const recurringEvent = recurringEventsForDate[0];
-                        if (recurringEvent) {
-                            openRecurringEventModal(dateKey, day, recurringEvent);
-                        } else {
-                            openModal(dateKey, day);
-                        }
-                    } else if (hasHoliday && hasRealEvents) {
-                        const choice = confirm(`Este dia tem tanto feriado quanto compromissos pessoais.\n\nClique em OK para ver os compromissos ou Cancelar para ver o feriado.`);
-                        
-                        if (choice) {
-                            const recurringEvent = recurringEventsForDate[0];
-                            if (recurringEvent) {
-                                openRecurringEventModal(dateKey, day, recurringEvent);
-                            } else {
-                                openModal(dateKey, day);
-                            }
-                        } else {
-                            let holidayData = dynamicHolidays[holidayKey];
-                            if (typeof holidayData === 'string') {
-                                holidayData = {
-                                    name: holidayData,
-                                    type: inferHolidayType(holidayData)
-                                };
-                            }
-                            openHolidayModal(dateKey, day, holidayData);
-                        }
-                    } else {
-                        openModal(dateKey, day);
-                    }
-                }
-            };
+dateEl.onclick = (e) => {
+    if (e.target.closest('.indicator') || e.target.closest('.season-indicator')) {
+        return;
+    }
+    
+    openDayModal(dateKey, day);
+};
             
             daysContainer.appendChild(dateEl);
         }
@@ -788,14 +828,12 @@ function inferHolidayType(holidayName) {
         const listItem = document.createElement("li");
         listItem.className = `event-list-item ${event.type}-item`;
         
-        // Formatar data para o novo layout
         const dateObj = new Date(event.date);
         const weekday = dateObj.toLocaleDateString("pt-BR", { 
             weekday: 'short' 
         }).replace('.', '').toUpperCase();
         const day = dateObj.getDate();
         
-        // Determinar badge
         let badgeClass = '';
         let badgeText = '';
         
@@ -818,7 +856,6 @@ function inferHolidayType(holidayName) {
                        event.type === 'leisure' ? 'LAZER' : 'PESSOAL';
         }
         
-        // Criar estrutura HTML
         listItem.innerHTML = `
             <div class="event-date">
                 <span class="weekday">${weekday}</span>
@@ -828,7 +865,6 @@ function inferHolidayType(holidayName) {
             <span class="event-type-badge ${badgeClass}">${badgeText}</span>
         `;
         
-        // Adicionar badge recorrente se necessário
         if (event.isRecurring) {
             const eventTextDiv = listItem.querySelector('.event-text');
             const recurringBadge = document.createElement('span');
@@ -837,21 +873,61 @@ function inferHolidayType(holidayName) {
             eventTextDiv.appendChild(recurringBadge);
         }
         
-        // Configurar click handler
-        listItem.onclick = () => {
-            const day = event.day;
-            const dateKey = `${year}-${month}-${day}`;
-            
-            if (event.type === 'holiday' || event.type === 'facultative' || event.type === 'religious' || event.type === 'local') {
-                const holidayKey = `${day}-${month}`;
-                openHolidayModal(dateKey, day, dynamicHolidays[holidayKey]);
-            } else if (event.isRecurring) {
-                openRecurringEventModal(dateKey, day, event);
-            } else {
-                openModal(dateKey, day);
-            }
-        };
+listItem.onclick = (e) => {
+    if (e.target.closest('.event-type-badge') || e.target.closest('.recurring-badge')) {
+        return;
+    }
+    
+    const day = event.day;
+    const dateKey = `${year}-${month}-${day}`;
+    
+    if (event.type === 'holiday' || event.type === 'facultative' || event.type === 'religious' || event.type === 'local') {
+        const holidayKey = `${day}-${month}`;
+        let holidayData = dynamicHolidays[holidayKey];
         
+        if (typeof holidayData === 'string') {
+            holidayData = {
+                name: holidayData,
+                type: event.originalType || inferHolidayType(holidayData)
+            };
+        }
+        
+        openHolidayModal(dateKey, day, holidayData);
+    } else if (event.isRecurring) {
+        openRecurringEventModal(dateKey, day, {
+            text: event.text,
+            category: event.type,
+            originalId: event.originalId,
+            dateKey: dateKey,
+            isRecurring: true
+        });
+    } else {
+        const eventData = events[dateKey];
+        
+        if (eventData) {
+            openModal(dateKey, day);
+        } else {
+            const date = new Date(year, month - 1, day);
+            const recurringEventsForDate = generateRecurringEventsForDate(date);
+            
+            const matchingRecurringEvent = recurringEventsForDate.find(re => 
+                re.text === event.text && re.category === event.type
+            );
+            
+            if (matchingRecurringEvent) {
+                openRecurringEventModal(dateKey, day, {
+                    text: matchingRecurringEvent.text,
+                    category: matchingRecurringEvent.category,
+                    originalId: matchingRecurringEvent.originalId,
+                    dateKey: dateKey,
+                    isRecurring: true
+                });
+            } else {
+                openDayModal(dateKey, day);
+            }
+        }
+    }
+};
         eventList.appendChild(listItem);
     });
     
@@ -870,14 +946,181 @@ function inferHolidayType(holidayName) {
         eventList.appendChild(listItem);
     }
     
-    // Atualizar contadores
     holidayCountEl.textContent = monthEvents.filter(e => ['holiday', 'facultative', 'religious', 'local'].includes(e.type)).length;
     eventCountEl.textContent = monthEvents.filter(e => ['personal', 'work', 'health', 'leisure'].includes(e.type)).length;
 }
 
-    function openRecurringEventModal(dateKey, day, event) {
-        showModalMessage("Evento Recorrente", `Evento recorrente: ${event.text}\n\nEste é um evento recorrente. Para editá-lo, você precisa excluir a série completa.`, 'info');
+function openRecurringEventModal(dateKey, day, event) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'recurring-event-modal';
+    modal.style.display = 'flex';
+    
+    const [year, month] = dateKey.split("-");
+    const formattedDate = new Date(year, month - 1, day).toLocaleDateString("pt-BR", {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    }).replace(/^./, c => c.toUpperCase());
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <h2><i class="fas fa-redo"></i> Evento Recorrente</h2>
+            
+            <div class="form-group">
+                <p style="text-align: center; font-size: 1.1em; margin: 20px 0;">
+                    <strong>${event.text}</strong><br>
+                    <small style="color: var(--text-light);">${formattedDate}</small>
+                </p>
+                
+                <div style="background: var(--weekend); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <p style="margin: 0; text-align: center;">
+                        <i class="fas fa-info-circle" style="color: var(--accent); margin-right: 8px;"></i>
+                        Este é um evento recorrente. O que você gostaria de fazer?
+                    </p>
+                </div>
+            </div>
+            
+            <div class="modal-actions" style="justify-content: center;">
+                <button id="recurring-edit-this" class="confirm-btn" 
+                        style="background: var(--accent); color: white; min-width: 140px;">
+                    <i class="fas fa-edit"></i> Editar Este
+                </button>
+                <button id="recurring-delete-this" class="confirm-btn" 
+                        style="background: #f59e0b; color: white; min-width: 140px;">
+                    <i class="fas fa-trash"></i> Excluir Este
+                </button>
+                <button id="recurring-delete-all" class="confirm-btn" 
+                        style="background: var(--holiday-color); color: white; min-width: 140px;">
+                    <i class="fas fa-ban"></i> Excluir Tudo
+                </button>
+                <button id="recurring-cancel" class="confirm-btn" 
+                        style="background: var(--weekend); color: var(--text); min-width: 140px;">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+document.getElementById('recurring-edit-this').onclick = () => {
+    editThisOccurrence(event, dateKey, day);
+};
+    
+        document.getElementById('recurring-delete-this').onclick = () => {
+            deleteThisOccurrence(event, dateKey, day);
+        };
+
+        document.getElementById('recurring-delete-all').onclick = () => {
+            deleteAllOccurrences(event, day);
+        };
+    
+    document.getElementById('recurring-cancel').onclick = () => {
+        modal.remove();
+    };
+    
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    };
+}
+
+
+function editThisOccurrence(event, dateKey, day) {
+    const modal = document.getElementById('recurring-event-modal');
+    if (modal) modal.remove();
+    
+    events[dateKey] = {
+        text: event.text,
+        category: event.category || 'personal',
+        date: dateKey,
+        isFromRecurring: true,
+        originalRecurringId: event.originalId,
+        excludedFromRecurring: true
+    };
+    
+    localStorage.setItem("events", JSON.stringify(events));
+    
+    if (event.originalId && recurringEvents[event.originalId]) {
+        if (!recurringEvents[event.originalId].excludedDates) {
+            recurringEvents[event.originalId].excludedDates = [];
+        }
+        recurringEvents[event.originalId].excludedDates.push(dateKey);
+        localStorage.setItem("recurringEvents", JSON.stringify(recurringEvents));
     }
+    
+    openModal(dateKey, day);
+}
+
+function deleteThisOccurrence(event, dateKey, day) {
+    const modal = document.getElementById('recurring-event-modal');
+    if (modal) modal.remove();
+    
+    showConfirmModal(
+        "Excluir Esta Ocorrência",
+        "Tem certeza que deseja excluir apenas esta ocorrência do evento recorrente?\n\nEsta ação removerá apenas este evento específico, mantendo os demais da série.",
+        'warning'
+    ).then((confirmed) => {
+        if (confirmed) {
+            if (events[dateKey]) {
+                delete events[dateKey];
+            }
+            
+            if (event.originalId && recurringEvents[event.originalId]) {
+                if (!recurringEvents[event.originalId].excludedDates) {
+                    recurringEvents[event.originalId].excludedDates = [];
+                }
+                
+                if (!recurringEvents[event.originalId].excludedDates.includes(dateKey)) {
+                    recurringEvents[event.originalId].excludedDates.push(dateKey);
+                }
+                
+                localStorage.setItem("recurringEvents", JSON.stringify(recurringEvents));
+            }
+            
+            localStorage.setItem("events", JSON.stringify(events));
+            renderCalendar(true);
+            
+            showModalMessage("Sucesso", "Esta ocorrência do evento recorrente foi excluída.", 'info');
+        } else {
+            openRecurringEventModal(dateKey, day, event);
+        }
+    });
+}
+
+function deleteAllOccurrences(event, day) {
+    const modal = document.getElementById('recurring-event-modal');
+    if (modal) modal.remove();
+    
+    showConfirmModal(
+        "Excluir Toda a Série",
+        "Tem certeza que deseja excluir TODA a série de eventos recorrentes?\nEsta ação não pode ser desfeita.",
+        'error'
+    ).then((confirmed) => {
+        if (confirmed && event.originalId) {
+            delete recurringEvents[event.originalId];
+            localStorage.setItem("recurringEvents", JSON.stringify(recurringEvents));
+            
+            Object.keys(events).forEach(key => {
+                if (events[key]?.originalRecurringId === event.originalId) {
+                    delete events[key];
+                }
+            });
+            
+            localStorage.setItem("events", JSON.stringify(events));
+            renderCalendar(true);
+            
+            showModalMessage("Sucesso", "Toda a série de eventos recorrentes foi excluída.", 'info');
+        } else if (!confirmed) {
+            const [year, month] = event.dateKey ? event.dateKey.split("-") : 
+                [currentDate.getFullYear(), currentDate.getMonth() + 1];
+            openRecurringEventModal(`${year}-${month}-${day}`, day, event);
+        }
+    });
+}
 
     function openModal(dateKey, day) {
         selectedDate = dateKey;
@@ -1169,87 +1412,196 @@ function inferHolidayType(holidayName) {
         updateNextHoliday();
     };
 
-    refreshHolidaysBtn.onclick = () => {
-        const year = currentDate.getFullYear();
-        fetchHolidays(year);
-    };
+refreshHolidaysBtn.onclick = () => {
+    const year = currentDate.getFullYear();
+    fetchHolidays(year).then(() => {
+        updateFooterStats();
+    });
+};
 
-    async function limparLocalStorage() {
-        const shouldClear = await showConfirmModal(
-            "Limpar Dados",
-            "Tem certeza que deseja apagar todos os dados salvos?\n\nEsta ação não pode ser desfeita!",
-            'error'
-        );
+async function limparLocalStorage() {
+    const shouldClear = await showConfirmModal(
+        "Limpar Dados",
+        "Tem certeza que deseja apagar todos os dados salvos?\n\nEsta ação não pode ser desfeita!",
+        'error'
+    );
+    
+    if (!shouldClear) return;
+    
+    toggleSpinner(true, "Limpando dados...");
+    
+    setTimeout(() => {
+        localStorage.clear();
+        events = {};
+        recurringEvents = {};
         
-        if (!shouldClear) return;
+        showModalMessage("Sucesso", "Limpo com sucesso!", 'info');
+        renderCalendar(true);
         
-        toggleSpinner(true, "Limpando dados...");
-        
-        setTimeout(() => {
-            localStorage.clear();
-            events = {};
-            recurringEvents = {};
-            
-            showModalMessage("Sucesso", "Limpo com sucesso!", 'info');
-            renderCalendar(true);
-        }, 300);
-    }
+        updateFooterStats();
+    }, 300);
+}
 
     window.onclick = (event) => {
         if (event.target === modal) closeModal();
         if (event.target === holidayModal) holidayModal.style.display = "none";
         if (event.target === confirmModal) confirmModal.style.display = "none";
+        if (event.target === dayModal) dayModal.style.display = "none";
     };
 
     function initializeCurrentDate() {
-    // Chamar imediatamente
     updateCurrentDate();
     updateLiveClock();
     
-    // Configurar intervalo para atualizar a cada minuto
     setInterval(() => {
         updateCurrentDate();
         updateLiveClock();
     }, 60000);
     
-    // Atualizar progresso do ano também
     updateYearProgress();
 }
 
-  document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
     updateAppTitle();
     
-    // Inicializar data e hora
     function initializeDateTime() {
         updateCurrentDate();
         updateLiveClock();
         updateYearProgress();
-        
     }
 
     populateYearSelect();
     updateSearchFields();
     
-    // Chamar imediatamente
     initializeDateTime();
     
-    // Configurar timezone
     initTimezoneSelector();
     
-    // Carregar dados
     fetchHolidays(currentDate.getFullYear());
     renderCalendar();
     
-    // Atualizar relógio em tempo real
+    updateFooter();
+    animateFooterSections();
+    
     setInterval(updateLiveClock, 1000);
     
-    // Atualizar data e progresso a cada minuto
     setInterval(() => {
         updateCurrentDate();
         updateYearProgress();
     }, 60000);
     
-    // Responsividade para mobile
+    setInterval(updateFooterStats, 60000); 
+    
+    
+    if (headerHelpBtn) {
+        headerHelpBtn.addEventListener('click', openHowToUseModal);
+    }
+    
+    if (headerContactBtn) {
+        headerContactBtn.addEventListener('click', openContactModal);
+    }
+    
+    const footerHelpLinks = document.querySelectorAll('.footer-links a');
+    const footerContactLinks = document.querySelectorAll('.footer-links a');
+    
+    footerHelpLinks.forEach(link => {
+        const linkText = link.textContent || link.innerText || '';
+        const hasQuestionIcon = link.querySelector('.fa-question-circle');
+        
+        if (linkText.includes('Como Usar') || linkText.includes('como usar') || hasQuestionIcon) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                openHowToUseModal();
+            });
+        }
+    });
+    
+    footerContactLinks.forEach(link => {
+        const linkText = link.textContent || link.innerText || '';
+        const hasEnvelopeIcon = link.querySelector('.fa-envelope');
+        
+        if (linkText.includes('Contato') || linkText.includes('contato') || hasEnvelopeIcon) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                openContactModal();
+            });
+        }
+    });
+    
+    if (howToUseClose) {
+        howToUseClose.addEventListener('click', () => {
+            howToUseModal.style.display = 'none';
+        });
+    }
+    
+    if (howToUseUnderstood) {
+        howToUseUnderstood.addEventListener('click', () => {
+            howToUseModal.style.display = 'none';
+        });
+    }
+    
+    if (contactClose) {
+        contactClose.addEventListener('click', () => {
+            contactModal.style.display = 'none';
+        });
+    }
+    
+    if (contactUnderstood) {
+        contactUnderstood.addEventListener('click', () => {
+            contactModal.style.display = 'none';
+        });
+    }
+    
+    window.addEventListener('click', (event) => {
+        if (event.target === howToUseModal) {
+            howToUseModal.style.display = 'none';
+        }
+        if (event.target === contactModal) {
+            contactModal.style.display = 'none';
+        }
+        if (event.target === modal) closeModal();
+        if (event.target === holidayModal) holidayModal.style.display = "none";
+        if (event.target === confirmModal) confirmModal.style.display = "none";
+        if (event.target === dayModal) dayModal.style.display = "none";
+    });
+    
+    setupHowToUseTabs();
+    
+    if (document.getElementById('random-tip')) {
+        updateRandomTip();
+        
+        setInterval(() => {
+            if (howToUseModal.style.display === 'flex') {
+                updateRandomTip();
+            }
+        }, 5000);
+    }
+    
+    const contactInfo = {
+        email: "matheus.abib.ma@gmail.com",
+        phone: "+55 (11) 975072008",
+        github: "github.com/MatheusAbib",
+        linkedin: "linkedin.com/in/MatheusAbib"
+    };
+    
+    document.getElementById('contact-email').textContent = contactInfo.email;
+    document.getElementById('contact-phone').textContent = contactInfo.phone;
+    document.getElementById('contact-github').textContent = contactInfo.github;
+    document.getElementById('contact-linkedin').textContent = contactInfo.linkedin;
+    
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        if (btn.getAttribute('data-text') === "seu.email@exemplo.com") {
+            btn.setAttribute('data-text', contactInfo.email);
+        }
+        if (btn.getAttribute('data-text') === "+5511999999999") {
+            btn.setAttribute('data-text', contactInfo.phone.replace(/\D/g, ''));
+        }
+    });
+    
+    setupCopyButtons();
+    
+    setupFAQAccordion();
+    
     if (window.innerWidth <= 767) {
         const eventListSection = document.querySelector('.event-list-section');
         const mobileToggle = document.getElementById('mobile-event-toggle');
@@ -1277,9 +1629,21 @@ function inferHolidayType(holidayName) {
         if (mainToggleBtn) {
             mainToggleBtn.style.display = 'none';
         }
+        
+        const headerHelpBtn = document.getElementById('header-help-btn');
+        const headerContactBtn = document.getElementById('header-contact-btn');
+        
+        if (headerHelpBtn && window.innerWidth <= 480) {
+            const spanHelp = headerHelpBtn.querySelector('span');
+            if (spanHelp) spanHelp.style.display = 'none';
+        }
+        
+        if (headerContactBtn && window.innerWidth <= 480) {
+            const spanContact = headerContactBtn.querySelector('span');
+            if (spanContact) spanContact.style.display = 'none';
+        }
     }
     
-    // Configurar botão de estações
     const seasonToggle = document.getElementById('season-toggle');
     seasonToggle.innerHTML = showSeasons 
         ? '<i class="fas fa-leaf"></i> Ocultar Estações' 
@@ -1307,40 +1671,36 @@ function inferHolidayType(holidayName) {
                 seasonLegend.classList.remove('show');
             }
         }
-
         
         renderCalendar(true);
     });
 
-        searchGoBtn.addEventListener('click', goToSearchedMonth);
+    searchGoBtn.addEventListener('click', goToSearchedMonth);
 
-        // Também permitir pesquisa com Enter nos campos
-        searchMonthSelect.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                goToSearchedMonth();
-            }
-        });
+    searchMonthSelect.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            goToSearchedMonth();
+        }
+    });
 
-        searchYearSelect.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                goToSearchedMonth();
-            }
-        });
+    searchYearSelect.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            goToSearchedMonth();
+        }
+    });
 
-        // Atualizar campos de pesquisa quando navegar com botões
-        prevBtn.addEventListener('click', () => {
-            setTimeout(updateSearchFields, 100);
-        });
+    prevBtn.addEventListener('click', () => {
+        setTimeout(updateSearchFields, 100);
+    });
 
-        nextBtn.addEventListener('click', () => {
-            setTimeout(updateSearchFields, 100);
-        });
+    nextBtn.addEventListener('click', () => {
+        setTimeout(updateSearchFields, 100);
+    });
 
-        todayBtn.addEventListener('click', () => {
-            setTimeout(updateSearchFields, 100);
-        });
+    todayBtn.addEventListener('click', () => {
+        setTimeout(updateSearchFields, 100);
+    });
     
-    // Fallback de segurança para data
     setTimeout(() => {
         if (currentDateDisplay && currentDateDisplay.textContent === 'Carregando...') {
             const now = new Date();
@@ -1355,7 +1715,6 @@ function inferHolidayType(holidayName) {
                 const formattedDate = now.toLocaleDateString('pt-BR', options);
                 currentDateDisplay.textContent = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
             } catch (error) {
-                // Fallback sem timezone
                 const optionsFallback = { 
                     weekday: 'long', 
                     day: 'numeric', 
@@ -1366,7 +1725,6 @@ function inferHolidayType(holidayName) {
             }
         }
         
-        // Fallback para tempo no card
         if (document.getElementById('current-time-display') && 
             document.getElementById('current-time-display').textContent === '--:--:--') {
             const now = new Date();
@@ -1461,7 +1819,6 @@ function updateYearProgress() {
     document.getElementById('year-progress-display').textContent = `${formattedPercentage}%`;
     document.getElementById('year-progress-days').textContent = `${daysPassed} de ${totalDays} dias`;
     
-    // Atualizar barra de progresso
     const progressBar = document.getElementById('year-progress-bar');
     if (progressBar) {
         progressBar.style.width = `${percentage}%`;
@@ -1737,7 +2094,6 @@ function updateLiveClock() {
         const now = new Date();
         const timeZone = selectedTimezone || 'America/Sao_Paulo';
         
-        // Atualizar relógio principal
         const timeString = now.toLocaleTimeString('pt-BR', {
             timeZone: timeZone,
             hour12: false,
@@ -1760,7 +2116,6 @@ function updateLiveClock() {
         clockElement.textContent = timeString;
         dateElement.textContent = `${formattedDate} | ${timezoneName}`;
         
-        // Atualizar hora no card HOJE
         if (currentTimeElement) {
             const cardTimeString = now.toLocaleTimeString('pt-BR', {
                 timeZone: timeZone,
@@ -1775,7 +2130,6 @@ function updateLiveClock() {
         
     } catch (error) {
         console.error('Erro ao atualizar relógio:', error);
-        // Fallback básico
         const now = new Date();
         if (clockElement) {
             clockElement.textContent = now.toLocaleTimeString('pt-BR', {hour12: false});
@@ -1888,7 +2242,6 @@ function handleSearchKeyPress(e) {
 }
 
 function setupSearchAutoComplete() {
-    // Quando selecionar um ano, sugerir o mês atual se não houver seleção
     searchYearSelect.addEventListener('change', function() {
         if (searchMonthSelect.value === "" && this.value !== "") {
             const currentMonth = new Date().getMonth();
@@ -1896,7 +2249,6 @@ function setupSearchAutoComplete() {
         }
     });
     
-    // Quando selecionar um mês, sugerir o ano atual se não houver seleção
     searchMonthSelect.addEventListener('change', function() {
         if (searchYearSelect.value === "" && this.value !== "") {
             const currentYear = new Date().getFullYear();
@@ -1916,3 +2268,691 @@ searchYearSelect.addEventListener('keypress', function(e) {
         goToSearchedMonth();
     }
 });
+
+function openDayModal(dateKey, day) {
+    selectedDate = dateKey; 
+    const [year, month] = dateKey.split("-");
+    const date = new Date(year, month - 1, day);
+    
+    const formattedDate = date.toLocaleDateString("pt-BR", {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    }).replace(/^./, c => c.toUpperCase());
+    
+    dayModalTitle.textContent = formattedDate;
+    
+    dayEventsContainer.innerHTML = '';
+    
+    const dayEvents = [];
+    const holidayKey = `${day}-${month}`;
+    
+    if (dynamicHolidays[holidayKey]) {
+        let holidayData = dynamicHolidays[holidayKey];
+        let holidayName = '';
+        let holidayType = '';
+        
+        if (typeof holidayData === 'object') {
+            holidayName = holidayData.name;
+            holidayType = holidayData.type;
+        } else {
+            holidayName = holidayData;
+            holidayType = inferHolidayType(holidayName);
+        }
+        
+        const typeClass = holidayType === 'Facultativo' ? 'facultative' :
+                         holidayType === 'Feriado Religioso' ? 'religious' :
+                         holidayType === 'Feriado Estadual/Municipal' ? 'local' : 'holiday';
+        
+        dayEvents.push({
+            type: typeClass,
+            name: holidayName,
+            eventType: holidayType,
+            isHoliday: true,
+            isRecurring: false,
+            dateKey: dateKey
+        });
+    }
+    
+    if (events[dateKey]) {
+        const eventData = events[dateKey];
+        
+        if (!eventData.excludedFromRecurring && !eventData.isFromRecurring) {
+            dayEvents.push({
+                type: eventData.category || 'personal',
+                name: eventData.text,
+                eventType: getEventTypeName(eventData.category || 'personal'),
+                isHoliday: false,
+                isRecurring: false,
+                dateKey: dateKey,
+                originalId: null
+            });
+        }
+    }
+    
+    const recurringEventsForDate = generateRecurringEventsForDate(date);
+    
+    if (recurringEventsForDate.length > 0) {
+        recurringEventsForDate.forEach(recurringEvent => {
+            const isExcluded = recurringEvent.excludedDates && 
+                              recurringEvent.excludedDates.includes(dateKey);
+            
+            if (!isExcluded) {
+                const isAlreadyAdded = dayEvents.some(event => 
+                    !event.isHoliday && 
+                    event.name === recurringEvent.text && 
+                    event.type === recurringEvent.category
+                );
+                
+                if (!isAlreadyAdded) {
+                    dayEvents.push({
+                        type: recurringEvent.category || 'personal',
+                        name: recurringEvent.text,
+                        eventType: getEventTypeName(recurringEvent.category || 'personal'),
+                        isHoliday: false,
+                        isRecurring: true,
+                        originalId: recurringEvent.originalId,
+                        dateKey: dateKey
+                    });
+                }
+            }
+        });
+    }
+    
+    Object.keys(events).forEach(key => {
+        if (key === dateKey) {
+            const eventData = events[key];
+            
+            if (eventData.isFromRecurring || eventData.originalRecurringId) {
+                dayEvents.push({
+                    type: eventData.category || 'personal',
+                    name: eventData.text,
+                    eventType: getEventTypeName(eventData.category || 'personal'),
+                    isHoliday: false,
+                    isRecurring: false, 
+                    wasRecurring: true, 
+                    originalId: eventData.originalRecurringId,
+                    dateKey: dateKey
+                });
+            }
+        }
+    });
+    
+    dayEvents.sort((a, b) => {
+        if (a.isHoliday && !b.isHoliday) return -1;
+        if (!a.isHoliday && b.isHoliday) return 1;
+        
+        if (a.isRecurring && !b.isRecurring) return -1;
+        if (!a.isRecurring && b.isRecurring) return 1;
+        
+        return 0;
+    });
+    
+    if (dayEvents.length === 0) {
+        dayEventsContainer.innerHTML = `
+            <div class="empty-day-events" style="text-align: center; padding: 40px 20px;">
+                <i class="far fa-calendar-times" style="font-size: 3rem; color: var(--text-light); opacity: 0.5; margin-bottom: 16px;"></i>
+                <p style="color: var(--text-light);">Nenhum evento neste dia</p>
+                <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 8px;">Clique em "Adicionar Compromisso" para criar um novo</p>
+            </div>
+        `;
+    } else {
+        dayEvents.forEach(event => {
+            const eventItem = document.createElement('div');
+            eventItem.className = `day-event-item ${event.type}-item`;
+            
+            let iconClass = '';
+            let icon = '';
+            
+            if (event.isHoliday) {
+                iconClass = event.type;
+                icon = event.type === 'facultative' ? 'fas fa-building' :
+                       event.type === 'religious' ? 'fas fa-church' :
+                       event.type === 'local' ? 'fas fa-landmark' : 'fas fa-flag';
+            } else {
+                iconClass = event.type;
+                icon = event.type === 'work' ? 'fas fa-briefcase' :
+                       event.type === 'health' ? 'fas fa-heartbeat' :
+                       event.type === 'leisure' ? 'fas fa-gamepad' : 'fas fa-check';
+            }
+            
+            eventItem.innerHTML = `
+                <div class="day-event-header">
+                    <div class="day-event-icon ${iconClass}">
+                        <i class="${icon}"></i>
+                    </div>
+                    <div class="day-event-info">
+                        <div class="day-event-name">${event.name}</div>
+                        <div>
+                            <span class="day-event-type ${event.type}">${event.eventType}</span>
+                            ${event.isRecurring ? 
+                                '<span class="day-event-recurring"><i class="fas fa-redo"></i> Recorrente</span>' : 
+                                ''}
+                            ${event.wasRecurring ? 
+                                '<span class="day-event-recurring" style="background: var(--accent-light);"><i class="fas fa-edit"></i> Editado Separadamente</span>' : 
+                                ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            eventItem.onclick = (e) => {
+                e.stopPropagation();
+                dayModal.style.display = 'none';
+                
+                if (event.isHoliday) {
+                    const holidayKey = `${day}-${month}`;
+                    let holidayData = dynamicHolidays[holidayKey];
+                    
+                    if (typeof holidayData === 'string') {
+                        holidayData = {
+                            name: holidayData,
+                            type: inferHolidayType(holidayData)
+                        };
+                    }
+                    
+                    openHolidayModal(dateKey, day, holidayData);
+                } else if (event.isRecurring) {
+                    openRecurringEventModal(dateKey, day, {
+                        text: event.name,
+                        category: event.type,
+                        originalId: event.originalId,
+                        dateKey: dateKey,
+                        isRecurring: true
+                    });
+                } else {
+                    openModal(dateKey, day);
+                }
+            };
+            
+            dayEventsContainer.appendChild(eventItem);
+        });
+    }
+    
+    const hasHolidays = dayEvents.some(e => e.isHoliday);
+    const hasRecurringEvents = dayEvents.some(e => e.isRecurring);
+    
+    if (hasHolidays) {
+        dayModalNote.innerHTML = `
+            <i class="fas fa-info-circle"></i>
+            <span>Feriados não podem ser editados ou excluídos. Clique em um evento para mais opções.</span>
+        `;
+    } else if (hasRecurringEvents) {
+        dayModalNote.innerHTML = `
+            <i class="fas fa-info-circle"></i>
+            <span>Eventos recorrentes têm opções especiais. Clique em um evento para ver as opções disponíveis.</span>
+        `;
+    } else {
+        dayModalNote.innerHTML = `
+            <i class="fas fa-info-circle"></i>
+            <span>Clique em um evento para editá-lo ou excluí-lo.</span>
+        `;
+    }
+    
+    dayModalAddEvent.onclick = () => {
+        dayModal.style.display = 'none';
+        openModal(dateKey, day);
+    };
+    
+    dayModalClose.onclick = () => {
+        dayModal.style.display = 'none';
+    };
+    
+    dayModal.style.display = 'flex';
+    modal.style.display = 'none';
+    holidayModal.style.display = 'none';
+}
+
+function getEventTypeName(type) {
+    const typeNames = {
+        'personal': 'Pessoal',
+        'work': 'Trabalho',
+        'health': 'Saúde',
+        'leisure': 'Lazer',
+        'holiday': 'Feriado Nacional',
+        'facultative': 'Ponto Facultativo',
+        'religious': 'Feriado Religioso',
+        'local': 'Feriado Local'
+    };
+    return typeNames[type] || type;
+}
+
+if (dayModalClose) {
+    dayModalClose.onclick = () => {
+        dayModal.style.display = 'none';
+    };
+}
+
+if (dayModalAddEvent) {
+    dayModalAddEvent.onclick = () => {
+        if (selectedDate) {
+            const [year, month, day] = selectedDate.split("-").map(Number);
+            dayModal.style.display = 'none';
+            openModal(selectedDate, day);
+        }
+    };
+}
+
+
+function updateFooter() {
+    const currentYear = new Date().getFullYear();
+    document.getElementById('footer-year').textContent = currentYear;
+    document.getElementById('current-footer-year').textContent = currentYear;
+    
+    updateFooterStats();
+    
+    initParticleAnimations();
+    
+    setupBackToTopButton();
+}
+
+function updateFooterStats() {
+    let totalEvents = Object.keys(events).length;
+    
+    Object.keys(recurringEvents).forEach(id => {
+        const recurringEvent = recurringEvents[id];
+        if (recurringEvent.endCondition === 'count') {
+            totalEvents += recurringEvent.occurrenceCount || 1;
+        } else {
+            totalEvents += 12; 
+        }
+    });
+    
+    let totalHolidays = 0;
+    const currentYear = new Date().getFullYear();
+    
+    Object.keys(dynamicHolidays).forEach(key => {
+        totalHolidays++;
+    });
+    
+    const footerTotalEvents = document.getElementById('footer-total-events');
+    const footerTotalHolidays = document.getElementById('footer-total-holidays');
+    
+    if (footerTotalEvents) {
+        footerTotalEvents.textContent = totalEvents;
+        
+        footerTotalEvents.style.transform = 'scale(1.2)';
+        footerTotalEvents.style.color = 'var(--accent-light)';
+        
+        setTimeout(() => {
+            footerTotalEvents.style.transform = 'scale(1)';
+            footerTotalEvents.style.color = '';
+        }, 300);
+    }
+    
+    if (footerTotalHolidays) {
+        footerTotalHolidays.textContent = totalHolidays;
+        
+        footerTotalHolidays.style.transform = 'scale(1.2)';
+        footerTotalHolidays.style.color = 'var(--accent-light)';
+        
+        setTimeout(() => {
+            footerTotalHolidays.style.transform = 'scale(1)';
+            footerTotalHolidays.style.color = '';
+        }, 300);
+    }
+}
+
+function initParticleAnimations() {
+    const particles = document.querySelectorAll('.particle');
+    
+    particles.forEach((particle, index) => {
+        const randomDelay = Math.random() * 5;
+        const randomDuration = 15 + Math.random() * 10;
+        
+        particle.style.animationDelay = `-${randomDelay}s`;
+        particle.style.animationDuration = `${randomDuration}s`;
+    });
+}
+
+function setupBackToTopButton() {
+    const backToTopBtn = document.getElementById('back-to-top');
+    
+    if (!backToTopBtn) return;
+    
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) {
+            backToTopBtn.style.opacity = '1';
+            backToTopBtn.style.visibility = 'visible';
+            backToTopBtn.style.transform = 'translateY(0)';
+        } else {
+            backToTopBtn.style.opacity = '0';
+            backToTopBtn.style.visibility = 'hidden';
+            backToTopBtn.style.transform = 'translateY(10px)';
+        }
+    });
+    
+    backToTopBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+        
+        backToTopBtn.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            backToTopBtn.style.transform = '';
+        }, 200);
+    });
+    
+    backToTopBtn.addEventListener('mouseenter', () => {
+        backToTopBtn.style.transform = 'translateY(-3px)';
+    });
+    
+    backToTopBtn.addEventListener('mouseleave', () => {
+        if (window.pageYOffset > 300) {
+            backToTopBtn.style.transform = 'translateY(0)';
+        }
+    });
+}
+
+function animateFooterSections() {
+    const footerSections = document.querySelectorAll('.footer-section');
+    
+    footerSections.forEach((section, index) => {
+        section.style.animationDelay = `${index * 0.1}s`;
+    });
+}
+
+function updateStatsOnChange() {
+    updateFooterStats();
+}
+
+const originalSaveFunction = saveBtn.onclick;
+saveBtn.onclick = function() {
+    if (originalSaveFunction) originalSaveFunction();
+    setTimeout(updateStatsOnChange, 100);
+};
+
+const originalDeleteFunction = deleteBtn.onclick;
+deleteBtn.onclick = function() {
+    if (originalDeleteFunction) originalDeleteFunction();
+    setTimeout(updateStatsOnChange, 100);
+};
+
+
+function openHowToUseModal() {
+    howToUseModal.style.display = 'flex';
+    
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    document.querySelector('[data-tab="basics"]').classList.add('active');
+    document.getElementById('tab-basics').classList.add('active');
+    
+    setupFAQAccordion();
+    
+    updateRandomTip();
+}
+
+function openContactModal() {
+    contactModal.style.display = 'flex';
+    
+    setupCopyButtons();
+}
+
+function setupFAQAccordion() {
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        
+        question.addEventListener('click', () => {
+            faqItems.forEach(otherItem => {
+                if (otherItem !== item && otherItem.classList.contains('active')) {
+                    otherItem.classList.remove('active');
+                }
+            });
+            
+            item.classList.toggle('active');
+        });
+    });
+}
+
+function setupCopyButtons() {
+    const copyButtons = document.querySelectorAll('.copy-btn');
+    
+    copyButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const textToCopy = this.getAttribute('data-text');
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showCopyFeedback(this);
+                }).catch(err => {
+                    fallbackCopy(textToCopy, this);
+                });
+            } else {
+                fallbackCopy(textToCopy, this);
+            }
+        });
+    });
+}
+
+function showCopyFeedback(button) {
+    const originalText = button.innerHTML;
+    const originalClass = button.className;
+    
+    button.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+    button.className = originalClass + ' copied';
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.className = originalClass;
+    }, 2000);
+}
+
+function fallbackCopy(text, button) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    
+    try {
+        document.execCommand('copy');
+        showCopyFeedback(button);
+    } catch (err) {
+        alert('Não foi possível copiar o texto. Por favor, copie manualmente.');
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+const tips = [
+    "Clique duas vezes em um dia para criar rapidamente um evento pessoal.",
+    "Arraste o mouse sobre os indicadores para ver detalhes dos eventos.",
+    "Use Ctrl + clique para selecionar múltiplos dias (em desenvolvimento).",
+    "Os eventos recorrentes podem ser configurados para terminar em uma data específica.",
+    "Você pode alterar o fuso horário no cabeçalho para sua região.",
+    "Use o consultor de datas para planejar eventos futuros.",
+    "Os feriados locais são carregados junto com os nacionais.",
+    "A barra de progresso do ano é atualizada em tempo real.",
+    "Você pode alternar entre temas claro e escuro a qualquer momento.",
+    "Em dispositivos móveis, o menu lateral pode ser ocultado para mais espaço."
+];
+
+function updateRandomTip() {
+    const randomTip = tips[Math.floor(Math.random() * tips.length)];
+    document.getElementById('random-tip').textContent = randomTip;
+}
+
+function setupHowToUseTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            this.classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (headerHelpBtn) {
+        headerHelpBtn.addEventListener('click', openHowToUseModal);
+    }
+    
+    if (headerContactBtn) {
+        headerContactBtn.addEventListener('click', openContactModal);
+    }
+    
+    const footerHelpLinks = document.querySelectorAll('a[href*="Como Usar"], a[href*="como-usar"]');
+    const footerContactLinks = document.querySelectorAll('a[href*="Contato"], a[href*="contato"]');
+    
+    footerHelpLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            openHowToUseModal();
+        });
+    });
+    
+    footerContactLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            openContactModal();
+        });
+    });
+    
+    if (howToUseClose) {
+        howToUseClose.addEventListener('click', () => {
+            howToUseModal.style.display = 'none';
+        });
+    }
+    
+    if (howToUseUnderstood) {
+        howToUseUnderstood.addEventListener('click', () => {
+            howToUseModal.style.display = 'none';
+        });
+    }
+    
+    if (contactClose) {
+        contactClose.addEventListener('click', () => {
+            contactModal.style.display = 'none';
+        });
+    }
+    
+    if (contactUnderstood) {
+        contactUnderstood.addEventListener('click', () => {
+            contactModal.style.display = 'none';
+        });
+    }
+    
+    window.addEventListener('click', (event) => {
+        if (event.target === howToUseModal) {
+            howToUseModal.style.display = 'none';
+        }
+        if (event.target === contactModal) {
+            contactModal.style.display = 'none';
+        }
+    });
+    
+    setupHowToUseTabs();
+    
+    if (document.getElementById('random-tip')) {
+        updateRandomTip();
+        
+        setInterval(() => {
+            if (howToUseModal.style.display === 'flex') {
+                updateRandomTip();
+            }
+        }, 5000);
+    }
+    
+    const contactInfo = {
+        email: "matheus.abib.ma@gmail.com",
+        phone: "+55 (11) 975072008",
+        github: "github.com/MatheusAbib",
+        linkedin: "linkedin.com/in/MatheusAbib"
+    };
+    
+    document.getElementById('contact-email').textContent = contactInfo.email;
+    document.getElementById('contact-phone').textContent = contactInfo.phone;
+    document.getElementById('contact-github').textContent = contactInfo.github;
+    document.getElementById('contact-linkedin').textContent = contactInfo.linkedin;
+    
+document.querySelectorAll('.copy-btn[data-text="matheus.abib.ma@gmail.com"]').forEach(btn => {
+            btn.setAttribute('data-text', contactInfo.email);
+    });
+    
+    document.querySelectorAll('.copy-btn[data-text="+5511975072008"]').forEach(btn => {
+        btn.setAttribute('data-text', contactInfo.phone.replace(/\D/g, ''));
+    });
+    
+    document.querySelectorAll('a[href="https://github.com/MatheusAbib"]').forEach(link => {
+        link.href = `https://${contactInfo.github}`;
+    });
+    
+    document.querySelectorAll('a[href="https://www.linkedin.com/in/matheusabib/"]').forEach(link => {
+        link.href = `https://${contactInfo.linkedin}`;
+    });
+});
+
+function setupFooterLinks() {
+    const footerHowToUse = document.getElementById('footer-how-to-use');
+    if (footerHowToUse) {
+        footerHowToUse.addEventListener('click', function(e) {
+            e.preventDefault();
+            openHowToUseModal();
+        });
+    }
+    
+    const footerContact = document.getElementById('footer-contact');
+    if (footerContact) {
+        footerContact.addEventListener('click', function(e) {
+            e.preventDefault();
+            openContactModal();
+        });
+    }
+    
+    const helpLinks = document.querySelectorAll('.footer-links a[href="#"]');
+    helpLinks.forEach(link => {
+        const text = link.textContent || link.innerText;
+        
+        if (text.includes('Como Usar') || text.includes('como usar')) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                openHowToUseModal();
+            });
+        }
+        
+        if (text.includes('Contato') || text.includes('contato')) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                openContactModal();
+            });
+        }
+    });
+}
+
+function openEventFromList(dateKey, day, eventData = null) {
+    if (!eventData && events[dateKey]) {
+        eventData = events[dateKey];
+    }
+    
+    if (eventData && eventData.isRecurring) {
+        openRecurringEventModal(dateKey, day, {
+            text: eventData.text,
+            category: eventData.category,
+            originalId: eventData.originalRecurringId,
+            dateKey: dateKey,
+            isRecurring: true
+        });
+    } else if (eventData) {
+        openModal(dateKey, day);
+    } else {
+        openDayModal(dateKey, day);
+    }
+}
