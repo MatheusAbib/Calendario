@@ -2476,7 +2476,7 @@ body {
             }
             .header-content {
                 flex-direction: column;
-                gap: 16px;
+                gap: 5px;
             }
             
             .header-left {
@@ -2538,6 +2538,7 @@ body {
     .contact-modal-content {
         max-width: 95%;
         max-height: 90vh;
+        margin: 5px;
     }
 
     .modal{
@@ -2564,8 +2565,8 @@ body {
     }
     
     .tab-btn {
-        padding: 10px 16px;
-        font-size: 0.85rem;
+        padding: 10px 16px !important;
+        font-size: 0.8rem !important;
         white-space: nowrap;
     }
     
@@ -2573,7 +2574,7 @@ body {
         flex-direction: column;
         align-items: flex-start;
         gap: 15px;
-        padding: 16px;
+        padding: 14px !important;
     }
     
     .feature-icon {
@@ -2657,10 +2658,6 @@ body {
         margin: 0 auto 25px;
     }
     
-    .footer-social {
-        justify-content: center;
-    }
-    
     .footer-title::after {
         left: 50%;
         transform: translateX(-50%);
@@ -2701,8 +2698,8 @@ body {
     }
     
         .mobile-toggle-btn{
-                padding: 5px 10px;
-                font-size: 0.85em;
+                padding: 6px 12px;
+                font-size: 0.9em;
             }
     .container {
         padding: 0 8px;
@@ -2857,7 +2854,7 @@ body {
         margin: 0;
         padding: 0;
         border: none;
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
     
     .desktop-title {
@@ -2867,8 +2864,8 @@ body {
     .event-list-item {
         flex-direction: column;
         align-items: flex-start;
-        gap: 12px;
-        padding: 16px;
+        gap: 8px;
+        padding: 15px;
     }
     
     .event-date {
@@ -3097,7 +3094,7 @@ body {
             }
 
             body {
-                padding: 5px 5px 0 5px;
+                padding: 0px 0px 0 0px;
             }
             
             .calendar-container {
@@ -3252,25 +3249,23 @@ body {
 
         @media (max-width: 480px) {
 
+            .consultant-result {
+                    padding: 25px;
+            }
+
 
         .modal-header {
-        gap: 15px;
-        text-align: center;
+        gap: 17px;
     }
     
     .modal-header h2 {
-        font-size: 1.2rem;
+        font-size: 1.1rem !important;
     }
     
     .header-actions .help-btn,
     .header-actions {
-        padding: 6px 12px;
-        font-size: 0.8rem;
-    }
-    
-    .header-actions .help-btn span,
-    .header-actions {
-        display: none;
+        padding: 11px 15px !important;
+        font-size: 1rem !important;
     }
     
     .header-actions .help-btn i,
@@ -3395,7 +3390,8 @@ body {
     
     .days div {
         min-height: 70px;
-        padding: 6px 2px;
+        padding: 8px 3px !important;
+        font-size: 15px;
     }
     
     .day-number {
@@ -3403,6 +3399,11 @@ body {
         align-items: center !important;
         gap: 4px;
         margin-bottom: 4px;
+    }
+
+    .event-stats{
+            gap: 10px;
+            font-size: 0.8rem;
     }
     
     .day-number .date-text {
@@ -3830,33 +3831,6 @@ body {
     opacity: 0.9;
     margin-bottom: 25px;
     max-width: 300px;
-}
-
-.footer-social {
-    display: flex;
-    gap: 15px;
-}
-
-.social-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.2rem;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    text-decoration: none;
-}
-
-.social-icon:hover {
-    background: white;
-    color: var(--primary);
-    transform: translateY(-3px) scale(1.1);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 .footer-title {

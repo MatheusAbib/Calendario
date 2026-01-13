@@ -1386,10 +1386,10 @@ function deleteAllOccurrences(event, day) {
             eventListSection.style.display = eventListVisible ? 'block' : 'none';
             
             if (eventListVisible) {
-                eventListToggle.innerHTML = '<i class="fas fa-eye-slash"></i> Ocultar';
+                eventListToggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
                 eventListToggle.classList.add('active');
             } else {
-                eventListToggle.innerHTML = '<i class="fas fa-eye"></i> Mostrar';
+                eventListToggle.innerHTML = '<i class="fas fa-eye"></i>';
                 eventListToggle.classList.remove('active');
             }
         }
@@ -1618,9 +1618,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 
                 if (isVisible) {
-                    mobileToggle.innerHTML = '<i class="fas fa-eye"></i> Mostrar';
+                    mobileToggle.innerHTML = '<i class="fas fa-eye"></i>';
                 } else {
-                    mobileToggle.innerHTML = '<i class="fas fa-eye-slash"></i> Ocultar';
+                    mobileToggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
                 }
             };
         }
