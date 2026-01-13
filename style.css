@@ -873,7 +873,7 @@ body {
 
         .indicator.religious {
             background: linear-gradient(135deg, var(--religious-color), #3498db);
-            border: 2px dotted var(--card-bg) !important;
+            border: 1.99px dotted var(--card-bg) !important;
         }
 
         .indicator.local {

@@ -435,86 +435,119 @@ function generateRecurringEventsForDate(date) {
     }
 
 
-
 function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, recurringId = null, dayType = null) {
     const indicator = document.createElement("div");
     indicator.title = tooltipText;
     
+    // Verificar se é um evento recorrente
     if (isRecurring && recurringId) {
         indicator.setAttribute('data-recurring-id', recurringId);
         indicator.setAttribute('data-recurring', 'true');
         indicator.setAttribute('data-event-text', tooltipText);
     }
     
-    let indicatorType = type;
+    // Determinar a classe CSS correta
+    let indicatorClass = type; // Começa com o type passado
+    
+    // Se dayType existe (para feriados), usar a classe CSS apropriada
     if (dayType && dayTypes[dayType]) {
-        indicatorType = dayTypes[dayType].cssClass;
-        indicator.className = `indicator ${indicatorType}`;
-        indicator.style.background = `linear-gradient(135deg, ${dayTypes[dayType].color}, ${darkenColor(dayTypes[dayType].color, 20)})`;
-    } else {
-        indicator.className = `indicator ${type}`;
+        indicatorClass = dayTypes[dayType].cssClass;
     }
-        
-        const icon = document.createElement("i");
-        if (dayType && dayTypes[dayType]) {
-            icon.className = dayTypes[dayType].icon;
-        } else {
-            icon.className = type === "holiday" ? "fas fa-flag" : 
-                            type === "work" ? "fas fa-briefcase" :
-                            type === "health" ? "fas fa-heartbeat" :
-                            type === "leisure" ? "fas fa-gamepad" : "fas fa-check";
+    
+    indicator.className = `indicator ${indicatorClass}`;
+    
+    // Configurar a cor do fundo
+    if (dayType && dayTypes[dayType]) {
+        // Para feriados, usar a cor do dayTypes
+        const color = dayTypes[dayType].color;
+        indicator.style.background = `linear-gradient(135deg, ${color}, ${darkenColor(color, 20)})`;
+    } else {
+        // Para outros tipos, manter o estilo padrão via CSS
+        indicator.style.background = '';
+    }
+    
+    const icon = document.createElement("i");
+    
+    // Configurar o ícone
+    if (dayType && dayTypes[dayType]) {
+        // Para feriados, usar o ícone específico
+        icon.className = dayTypes[dayType].icon;
+    } else {
+        // Para outros tipos, usar ícones padrão
+        icon.className = type === "holiday" ? "fas fa-flag" : 
+                        type === "facultative" ? "fas fa-building" :
+                        type === "religious" ? "fas fa-church" :
+                        type === "local" ? "fas fa-landmark" :
+                        type === "work" ? "fas fa-briefcase" :
+                        type === "health" ? "fas fa-heartbeat" :
+                        type === "leisure" ? "fas fa-gamepad" : "fas fa-check";
+    }
+    
+    icon.style.pointerEvents = "none";
+    icon.style.fontSize = "0.7em";
+    
+    const tooltip = document.createElement("div");
+    tooltip.className = "tooltip";
+    
+    let tooltipContent = tooltipText;
+    
+    // Adicionar tipo ao tooltip se for um feriado
+    if (dayType) {
+        tooltipContent = `<strong style="display: block; margin-bottom: 4px;">${dayType}</strong>${tooltipText}`;
+        if (dayTypes[dayType]?.description) {
+            tooltipContent += `<br><small style="display: block; margin-top: 4px; font-style: italic;">${dayTypes[dayType].description}</small>`;
         }
-        icon.style.pointerEvents = "none";
-        icon.style.fontSize = dayType === "Facultativo" ? "0.6em" : "0.7em";
+    }
+    
+    // Adicionar badge de recorrente se for o caso
+    if (isRecurring) {
+        tooltipContent += '<br><small style="display: block; margin-top: 4px;"><i class="fas fa-redo" style="margin-right: 4px;"></i>Evento recorrente</small>';
+    }
+    
+    tooltip.innerHTML = tooltipContent;
+    
+    indicator.appendChild(icon);
+    indicator.appendChild(tooltip);
+    
+    // Função auxiliar para escurecer cores
+    function darkenColor(color, percent) {
+        let r = parseInt(color.slice(1, 3), 16);
+        let g = parseInt(color.slice(3, 5), 16);
+        let b = parseInt(color.slice(5, 7), 16);
         
-        const tooltip = document.createElement("div");
-        tooltip.className = "tooltip";
+        r = Math.floor(r * (100 - percent) / 100);
+        g = Math.floor(g * (100 - percent) / 100);
+        b = Math.floor(b * (100 - percent) / 100);
         
-        let tooltipContent = tooltipText;
-        if (dayType) {
-            tooltipContent = `<strong style="display: block; margin-bottom: 4px;">${dayType}</strong>${tooltipText}`;
-            if (dayTypes[dayType]?.description) {
-                tooltipContent += `<br><small style="display: block; margin-top: 4px; font-style: italic;">${dayTypes[dayType].description}</small>`;
-            }
-        }
-        
-        if (isRecurring) {
-            tooltipContent += '<br><small style="display: block; margin-top: 4px;"><i class="fas fa-redo" style="margin-right: 4px;"></i>Evento recorrente</small>';
-        }
-        
-        tooltip.innerHTML = tooltipContent;
-        
-        indicator.appendChild(icon);
-        indicator.appendChild(tooltip);
-        
-        function darkenColor(color, percent) {
-            let r = parseInt(color.slice(1, 3), 16);
-            let g = parseInt(color.slice(3, 5), 16);
-            let b = parseInt(color.slice(5, 7), 16);
-            
-            r = Math.floor(r * (100 - percent) / 100);
-            g = Math.floor(g * (100 - percent) / 100);
-            b = Math.floor(b * (100 - percent) / 100);
-            
-            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-        }
-        
-        indicator.onclick = (e) => {
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    }
+    
+    // Configurar o clique
+    indicator.onclick = (e) => {
         e.stopPropagation();
         
-        if (type === "holiday" || dayType) {
+        // Verificar se é algum tipo de feriado
+        const isHoliday = type === "holiday" || type === "facultative" || 
+                         type === "religious" || type === "local" ||
+                         (dayType && (dayType === "Feriado Nacional" || 
+                                      dayType === "Facultativo" || 
+                                      dayType === "Feriado Religioso" || 
+                                      dayType === "Feriado Estadual/Municipal"));
+        
+        if (isHoliday) {
             const holidayKey = `${day}-${currentDate.getMonth() + 1}`;
             let holidayData = dynamicHolidays[holidayKey];
             
             if (typeof holidayData === 'string') {
                 holidayData = {
                     name: holidayData,
-                    type: inferHolidayType(holidayData)
+                    type: dayType || inferHolidayType(holidayData)
                 };
             }
             
             openHolidayModal(dateKey, day, holidayData);
         } else if (isRecurring) {
+            // Código para eventos recorrentes...
             const recurringId = indicator.getAttribute('data-recurring-id');
             const eventText = indicator.getAttribute('data-event-text') || tooltipText;
             
@@ -548,25 +581,27 @@ function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, r
             openModal(dateKey, day);
         }
     };
-        
-        indicator.addEventListener('mouseenter', function() {
-            const tooltip = this.querySelector('.tooltip');
-            if (tooltip) {
-                tooltip.style.visibility = 'visible';
-                tooltip.style.opacity = '1';
-            }
-        });
-        
-        indicator.addEventListener('mouseleave', function() {
-            const tooltip = this.querySelector('.tooltip');
-            if (tooltip) {
-                tooltip.style.visibility = 'hidden';
-                tooltip.style.opacity = '0';
-            }
-        });
-        
-        return indicator;
-    }
+    
+    // Configurar hover para tooltip
+    indicator.addEventListener('mouseenter', function() {
+        const tooltip = this.querySelector('.tooltip');
+        if (tooltip) {
+            tooltip.style.visibility = 'visible';
+            tooltip.style.opacity = '1';
+        }
+    });
+    
+    indicator.addEventListener('mouseleave', function() {
+        const tooltip = this.querySelector('.tooltip');
+        if (tooltip) {
+            tooltip.style.visibility = 'hidden';
+            tooltip.style.opacity = '0';
+        }
+    });
+    
+    return indicator;
+}
+
 
     async function renderCalendar(showLoading = false) {
         if (showLoading) {
@@ -633,26 +668,43 @@ function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, r
             let hasHoliday = false;
             let hasPersonalEvent = false;
             
-            if (dynamicHolidays[holidayKey]) {
-                holidayCount++;
-                hasHoliday = true;
-                
-                let holidayData = dynamicHolidays[holidayKey];
-                let holidayName = '';
-                let holidayType = null;
-                
-                if (typeof holidayData === 'object' && holidayData !== null) {
-                    holidayName = holidayData.name || holidayData;
-                    holidayType = holidayData.type;
-                } else {
-                    holidayName = holidayData;
-                    holidayType = inferHolidayType(holidayName);
-                }
-                
-                const holidayIndicator = createIndicator("holiday", holidayName, dateKey, day, false, holidayType);
-                dayIndicators.appendChild(holidayIndicator);
-                eventCount++;
-            }
+if (dynamicHolidays[holidayKey]) {
+    holidayCount++;
+    hasHoliday = true;
+    
+    let holidayData = dynamicHolidays[holidayKey];
+    let holidayName = '';
+    let holidayType = null;
+    
+    if (typeof holidayData === 'object' && holidayData !== null) {
+        holidayName = holidayData.name || holidayData;
+        holidayType = holidayData.type;
+    } else {
+        holidayName = holidayData;
+        holidayType = inferHolidayType(holidayName);
+    }
+    
+    let indicatorType = 'holiday'; 
+    
+    if (holidayType === 'Facultativo') {
+        indicatorType = 'facultative';
+    } else if (holidayType === 'Feriado Religioso') {
+        indicatorType = 'religious';
+    } else if (holidayType === 'Feriado Estadual/Municipal') {
+        indicatorType = 'local';
+    }
+    
+    const holidayIndicator = createIndicator(
+        indicatorType, 
+        holidayName, 
+        dateKey, 
+        day, 
+        false, 
+        holidayType 
+    );
+    dayIndicators.appendChild(holidayIndicator);
+    eventCount++;
+}
             
         if (events[dateKey]) {
             personalEventCount++;
