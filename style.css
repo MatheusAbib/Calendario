@@ -2098,7 +2098,7 @@ body {
 
 #consultant-date {
     flex: 1;
-    padding: 14px 20px;
+    padding: 12px 20px;
     border: 2px solid var(--card-border);
     border-radius: 12px;
     background: var(--bg);
@@ -2218,7 +2218,7 @@ body {
 }
 
 .quick-date-btn {
-    padding: 12px 20px;
+    padding: 12px 15px;
     background: var(--weekend);
     color: var(--text);
     border: 1px solid var(--card-border);
@@ -2232,7 +2232,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
 }
 
 .quick-date-btn:hover {
