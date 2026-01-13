@@ -439,41 +439,32 @@ function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, r
     const indicator = document.createElement("div");
     indicator.title = tooltipText;
     
-    // Verificar se é um evento recorrente
     if (isRecurring && recurringId) {
         indicator.setAttribute('data-recurring-id', recurringId);
         indicator.setAttribute('data-recurring', 'true');
         indicator.setAttribute('data-event-text', tooltipText);
     }
     
-    // Determinar a classe CSS correta
-    let indicatorClass = type; // Começa com o type passado
+    let indicatorClass = type; 
     
-    // Se dayType existe (para feriados), usar a classe CSS apropriada
     if (dayType && dayTypes[dayType]) {
         indicatorClass = dayTypes[dayType].cssClass;
     }
     
     indicator.className = `indicator ${indicatorClass}`;
     
-    // Configurar a cor do fundo
     if (dayType && dayTypes[dayType]) {
-        // Para feriados, usar a cor do dayTypes
         const color = dayTypes[dayType].color;
         indicator.style.background = `linear-gradient(135deg, ${color}, ${darkenColor(color, 20)})`;
     } else {
-        // Para outros tipos, manter o estilo padrão via CSS
         indicator.style.background = '';
     }
     
     const icon = document.createElement("i");
     
-    // Configurar o ícone
     if (dayType && dayTypes[dayType]) {
-        // Para feriados, usar o ícone específico
         icon.className = dayTypes[dayType].icon;
     } else {
-        // Para outros tipos, usar ícones padrão
         icon.className = type === "holiday" ? "fas fa-flag" : 
                         type === "facultative" ? "fas fa-building" :
                         type === "religious" ? "fas fa-church" :
@@ -491,7 +482,6 @@ function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, r
     
     let tooltipContent = tooltipText;
     
-    // Adicionar tipo ao tooltip se for um feriado
     if (dayType) {
         tooltipContent = `<strong style="display: block; margin-bottom: 4px;">${dayType}</strong>${tooltipText}`;
         if (dayTypes[dayType]?.description) {
@@ -499,7 +489,6 @@ function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, r
         }
     }
     
-    // Adicionar badge de recorrente se for o caso
     if (isRecurring) {
         tooltipContent += '<br><small style="display: block; margin-top: 4px;"><i class="fas fa-redo" style="margin-right: 4px;"></i>Evento recorrente</small>';
     }
@@ -509,7 +498,6 @@ function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, r
     indicator.appendChild(icon);
     indicator.appendChild(tooltip);
     
-    // Função auxiliar para escurecer cores
     function darkenColor(color, percent) {
         let r = parseInt(color.slice(1, 3), 16);
         let g = parseInt(color.slice(3, 5), 16);
@@ -522,11 +510,9 @@ function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, r
         return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     }
     
-    // Configurar o clique
     indicator.onclick = (e) => {
         e.stopPropagation();
         
-        // Verificar se é algum tipo de feriado
         const isHoliday = type === "holiday" || type === "facultative" || 
                          type === "religious" || type === "local" ||
                          (dayType && (dayType === "Feriado Nacional" || 
@@ -547,7 +533,6 @@ function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, r
             
             openHolidayModal(dateKey, day, holidayData);
         } else if (isRecurring) {
-            // Código para eventos recorrentes...
             const recurringId = indicator.getAttribute('data-recurring-id');
             const eventText = indicator.getAttribute('data-event-text') || tooltipText;
             
@@ -582,7 +567,6 @@ function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, r
         }
     };
     
-    // Configurar hover para tooltip
     indicator.addEventListener('mouseenter', function() {
         const tooltip = this.querySelector('.tooltip');
         if (tooltip) {
