@@ -1251,7 +1251,7 @@ body {
 }
 
 .modal-content {
-    background: var(--card-bg);
+    background: #ffffff;
     padding: 32px;
     border-radius: 20px;
     width: 100%;
@@ -1632,7 +1632,7 @@ body {
 }
 
       .holiday-modal-content {
-    background: var(--card-bg);
+    background: #ffffff;
     padding: 32px;
     border-radius: 20px;
     width: 100%;
@@ -3571,7 +3571,7 @@ body {
 
 
 .day-modal-content {
-    background: var(--card-bg);
+    background: #ffffff;
     padding: 32px;
     border-radius: 20px;
     width: 100%;
@@ -4082,7 +4082,7 @@ body {
 /* ===== MODAL COMO USAR ===== */
 .how-to-use-modal-content,
 .contact-modal-content {
-    background: var(--card-bg);
+    background: #ffffff;
     border-radius: 12px;
     width: 100%;
     max-width: 800px;
