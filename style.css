@@ -88,11 +88,11 @@ body {
             transparent 2px);
     
     background-size: 
-        100px 100px, /* Grade principal */
+        100px 100px, 
         100px 100px,
-        20px 20px,   /* Grade secundária */
+        20px 20px,   
         20px 20px,
-        100px 100px; /* Pontos */
+        100px 100px;
     
     background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
     
@@ -313,7 +313,6 @@ body {
     flex-wrap: wrap;
     padding: 20px 0;
     border-bottom: 1px solid var(--card-border);
-    margin-bottom: 20px;
 }
 
 .controls button {
@@ -745,7 +744,7 @@ body {
         
         .days div {
                 height: auto; 
-                padding: 8px;
+                padding: 10px;
                 transition: min-height 0.3s ease;           
                 border: 1px solid rgba(0,0,0,0.05);
             cursor: pointer;
@@ -779,7 +778,7 @@ body {
     justify-content: space-between !important;
     width: 100% !important;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 1.1rem;
     padding: 4px 0;
     position: relative;
 }
@@ -801,6 +800,8 @@ body {
 
         .day-number.with-season {
             justify-content: space-between !important;
+                     padding: 7px 7px;
+                flex-direction: row;
         }
 
         .day-number.with-season > :first-child:not(.season-indicator) {
@@ -1823,8 +1824,8 @@ body {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 16px;
-    padding: 20px 24px;
+    gap: 10px;
+    padding: 12px 24px;
     background: var(--weekend);
     border-top: 1px solid var(--card-border);
     border-radius: 0 0 16px 16px;
@@ -1833,10 +1834,10 @@ body {
 .legend-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.875rem;
+    gap: 5px;
+    font-size: 0.9rem;
     color: var(--text);
-    padding: 6px 12px;
+    padding: 8px 12px;
     background: var(--card-bg);
     border-radius: 8px;
     border: 1px solid var(--card-border);
@@ -1850,8 +1851,8 @@ body {
 }
 
 .legend-dot {
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -2373,9 +2374,9 @@ body {
       .season-legend {
     display: none;
     justify-content: center;
-    gap: 24px;
+    gap: 20px;
     flex-wrap: wrap;
-    padding: 16px 24px;
+    padding: 8px 24px;
     background: var(--season-bg);
     border-bottom: 1px solid rgba(0,0,0,0.1);
     border-top: 1px solid var(--card-border);
@@ -2397,7 +2398,8 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 8px 16px;
+    font-size: 13px;
+    padding: 4px 8px;
     background: var(--card-bg);
     border-radius: 8px;
     border: 1px solid var(--card-border);
@@ -2410,8 +2412,8 @@ body {
 }
 
 .legend-season-dot {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     border: 2px solid var(--card-bg);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -3031,10 +3033,11 @@ body {
             }
             
             .day-number.with-season {
-                flex-direction: row !important;
-                justify-content: space-between !important;
-                align-items: center !important;
-                margin-bottom: 4px;
+                    flex-direction: column;
+                    padding: 0px !important;
+                    justify-content: space-between !important;
+                    align-items: center !important;
+                    margin-bottom: 4px;
             }
             
             .day-number .season-indicator {
