@@ -1,3 +1,6 @@
+(function() {
+    "use strict";
+
     const searchMonthSelect = document.getElementById('search-month');
     const searchYearSelect = document.getElementById('search-year');
     const searchGoBtn = document.getElementById('search-go');
@@ -46,24 +49,18 @@
     const confirmMessage = document.getElementById("confirm-message");
     const confirmYesBtn = document.getElementById("confirm-yes");
     const confirmNoBtn = document.getElementById("confirm-no");
-
-
     const howToUseModal = document.getElementById('how-to-use-modal');
     const howToUseClose = document.getElementById('how-to-use-close');
-    const howToUseUnderstood = document.getElementById('how-to-use-understood');
     const contactModal = document.getElementById('contact-modal');
     const contactClose = document.getElementById('contact-close');
-    const contactUnderstood = document.getElementById('contact-understood');
     const headerHelpBtn = document.getElementById('header-help-btn');
-    const headerContactBtn = document.getElementById('header-contact-btn');
-
-
-        const dayModal = document.getElementById('day-modal');
-        const dayModalTitle = document.getElementById('day-modal-title');
-        const dayEventsContainer = document.getElementById('day-events-container');
-        const dayModalNote = document.getElementById('day-modal-note');
-        const dayModalAddEvent = document.getElementById('day-modal-add-event');
-        const dayModalClose = document.getElementById('day-modal-close');
+    const dayModal = document.getElementById('day-modal');
+    const dayModalTitle = document.getElementById('day-modal-title');
+    const dayEventsContainer = document.getElementById('day-events-container');
+    const dayModalNote = document.getElementById('day-modal-note');
+    const dayModalAddEvent = document.getElementById('day-modal-add-event');
+    const dayModalClose = document.getElementById('day-modal-close');
+    const clearDataBtn = document.getElementById('clear-data-btn');
 
     let currentDate = new Date();
     let selectedDate = null;
@@ -74,6 +71,7 @@
     let eventListVisible = true;
     let allHolidays = [];
     let showSeasons = localStorage.getItem("showSeasons") === "true";
+    let selectedTimezone = localStorage.getItem('timezone') || 'America/Sao_Paulo';
 
     const dayTypes = {
         'Feriado Nacional': {
@@ -111,7 +109,6 @@
         "2-11": { name: "Finados", type: "Feriado Nacional" },
         "15-11": { name: "Proclamação da República", type: "Feriado Nacional" },
         "25-12": { name: "Natal", type: "Feriado Nacional" },
-        
         "20-11": { name: "Dia da Consciência Negra", type: "Facultativo" },
         "28-10": { name: "Dia do Servidor Público", type: "Facultativo" },
         "30-10": { name: "Reforma Protestante", type: "Facultativo" },
@@ -121,88 +118,99 @@
         "29-6": { name: "São Pedro", type: "Facultativo" },
         "8-12": { name: "Nossa Senhora da Conceição", type: "Feriado Religioso" },
         "1-11": { name: "Dia de Todos os Santos", type: "Feriado Religioso" },
-        
-        "9-7": { name: "Revolução Constitucionalista (SP)", type: "Feriado Estadual/Municipal" },
+        "9-7": { name: "Revolução Constitucionalista (SP)", type: "Feriado Estadual/Municipal" }
     };
 
     document.documentElement.setAttribute("data-theme", theme);
-    themeToggle.innerHTML = theme === "dark" 
-        ? '<i class="fas fa-sun"></i> Tema Claro' 
+    themeToggle.innerHTML = theme === "dark"
+        ? '<i class="fas fa-sun"></i> Tema Claro'
         : '<i class="fas fa-moon"></i> Tema Escuro';
+
+    function hasStoredData() {
+        const hasEvents = Object.keys(events).length > 0;
+        const hasRecurring = Object.keys(recurringEvents).length > 0;
+        const hasCustomHolidays = Object.keys(dynamicHolidays).length > 0;
+        return hasEvents || hasRecurring || hasCustomHolidays;
+    }
+
+    function updateClearDataButtonVisibility() {
+        if (!clearDataBtn) return;
+        clearDataBtn.style.display = hasStoredData() ? 'flex' : 'none';
+    }
 
     function updateAppTitle() {
         const year = currentDate.getFullYear();
         appTitleYear.textContent = year;
     }
 
-function updateCurrentDate() {
-    const now = new Date();
-    const options = { 
-        weekday: 'long', 
-        day: 'numeric', 
-        month: 'long',
-        timeZone: selectedTimezone || 'America/Sao_Paulo'
-    };
-    
-    try {
-        const formattedDate = now.toLocaleDateString('pt-BR', options);
-        const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
-        
-        if (currentDateDisplay) {
-            currentDateDisplay.textContent = capitalizedDate;
-        }
-        
-        if (headerCurrentDateDisplay) {
-            headerCurrentDateDisplay.textContent = capitalizedDate;
-        }
-        
-    } catch (error) {
-        const optionsFallback = { 
-            weekday: 'long', 
-            day: 'numeric', 
-            month: 'long'
+    function updateCurrentDate() {
+        const now = new Date();
+        const options = {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            timeZone: selectedTimezone || 'America/Sao_Paulo'
         };
-        const formattedDate = now.toLocaleDateString('pt-BR', optionsFallback);
-        const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
-        
-        if (currentDateDisplay) {
-            currentDateDisplay.textContent = capitalizedDate;
-        }
-        
-        if (headerCurrentDateDisplay) {
-            headerCurrentDateDisplay.textContent = capitalizedDate;
+
+        try {
+            const formattedDate = now.toLocaleDateString('pt-BR', options);
+            const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+
+            if (currentDateDisplay) {
+                currentDateDisplay.textContent = capitalizedDate;
+            }
+
+            if (headerCurrentDateDisplay) {
+                headerCurrentDateDisplay.textContent = capitalizedDate;
+            }
+        } catch (error) {
+            const optionsFallback = {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long'
+            };
+            const formattedDate = now.toLocaleDateString('pt-BR', optionsFallback);
+            const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+
+            if (currentDateDisplay) {
+                currentDateDisplay.textContent = capitalizedDate;
+            }
+
+            if (headerCurrentDateDisplay) {
+                headerCurrentDateDisplay.textContent = capitalizedDate;
+            }
         }
     }
-}
+
     function updateNextHoliday() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
+
         let nextHoliday = null;
         let minDaysDiff = Infinity;
-        
+
         allHolidays.forEach(holiday => {
             const holidayDate = new Date(holiday.date);
             holidayDate.setHours(0, 0, 0, 0);
-            
+
             const timeDiff = holidayDate.getTime() - today.getTime();
             const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-            
+
             if (daysDiff > 0 && daysDiff < minDaysDiff) {
                 minDaysDiff = daysDiff;
                 nextHoliday = holiday;
             }
         });
-        
+
         if (nextHoliday) {
             const holidayDate = new Date(nextHoliday.date);
             const formattedDate = holidayDate.toLocaleDateString('pt-BR', {
                 day: 'numeric',
                 month: 'short'
             }).replace('.', '');
-            
+
             nextHolidayDisplay.textContent = `${formattedDate} - ${nextHoliday.name}`;
-            
+
             if (minDaysDiff === 1) {
                 nextHolidayDays.textContent = "Amanhã!";
             } else {
@@ -216,26 +224,26 @@ function updateCurrentDate() {
 
     async function fetchHolidays(year) {
         holidaysLoading.style.display = "block";
-        
+
         try {
             const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/BR`);
             if (!response.ok) throw new Error("Falha ao buscar feriados");
-            
+
             const holidays = await response.json();
             const formattedHolidays = {};
             allHolidays = [];
-            
+
             holidays.forEach(holiday => {
                 const date = new Date(holiday.date);
                 const adjustedDate = new Date(date.getTime() + (3 * 60 * 60 * 1000));
                 const key = `${adjustedDate.getDate()}-${adjustedDate.getMonth() + 1}`;
-                
+
                 const holidayType = inferHolidayType(holiday.localName);
                 formattedHolidays[key] = {
                     name: holiday.localName,
                     type: holidayType
                 };
-                
+
                 allHolidays.push({
                     date: adjustedDate,
                     name: holiday.localName,
@@ -243,14 +251,14 @@ function updateCurrentDate() {
                     key: key
                 });
             });
-            
+
             Object.keys(staticHolidays).forEach(key => {
                 if (!formattedHolidays[key]) {
                     formattedHolidays[key] = staticHolidays[key];
-                    
+
                     const [day, month] = key.split("-").map(Number);
                     const date = new Date(year, month - 1, day);
-                    
+
                     allHolidays.push({
                         date: date,
                         name: staticHolidays[key].name,
@@ -259,27 +267,28 @@ function updateCurrentDate() {
                     });
                 }
             });
-            
+
             dynamicHolidays = formattedHolidays;
             localStorage.setItem("dynamicHolidays", JSON.stringify(dynamicHolidays));
-            
+
             holidaysLoading.style.display = "none";
             renderCalendar();
             renderEventList();
             updateNextHoliday();
+            updateClearDataButtonVisibility();
             return true;
         } catch (error) {
             console.error("Erro ao buscar feriados:", error);
             holidaysLoading.style.display = "none";
-            
+
             dynamicHolidays = staticHolidays;
             allHolidays = [];
             const currentYear = currentDate.getFullYear();
-            
+
             Object.keys(staticHolidays).forEach(key => {
                 const [day, month] = key.split("-").map(Number);
                 const date = new Date(currentYear, month - 1, day);
-                
+
                 allHolidays.push({
                     date: date,
                     name: staticHolidays[key].name,
@@ -287,132 +296,134 @@ function updateCurrentDate() {
                     key: key
                 });
             });
-            
+
             updateNextHoliday();
+            updateClearDataButtonVisibility();
             return false;
         }
     }
 
-function inferHolidayType(holidayName) {
-    if (!holidayName) return 'Feriado Nacional';
-    
-    const lowerName = holidayName.toLowerCase();
-    
-    if (lowerName.includes('facultativo') || 
-        lowerName.includes('ponto') || 
-        lowerName.includes('servidor') ||
-        lowerName.includes('consciência negra') ||
-        lowerName.includes('consciencia negra') ||
-        lowerName.includes('véspera') ||
-        lowerName.includes('vespera') ||
-        lowerName.includes('dia de reis') ||
-        lowerName.includes('são pedro') ||
-        lowerName.includes('sao pedro') ||
-        lowerName.includes('carnaval')) {  
-        return 'Facultativo';
-    }
-    
-    if (lowerName.includes('corpus christi') || 
-        lowerName.includes('sexta-feira santa') ||
-        lowerName.includes('padroeira') ||
-        lowerName.includes('apóstolo') ||
-        lowerName.includes('apostolo') ||
-        lowerName.includes('são') ||
-        lowerName.includes('sao') ||
-        lowerName.includes('nossa senhora') ||
-        lowerName.includes('todos os santos') ||
-        lowerName.includes('imaculada conceição')) {
-        return 'Feriado Religioso';
-    }
-    
-    if (lowerName.includes('estadual') || 
-        lowerName.includes('municipal') ||
-        lowerName.includes('aniversário') ||
-        lowerName.includes('aniversario') ||
-        lowerName.includes('fundação') ||
-        lowerName.includes('revolução')) {
-        return 'Feriado Estadual/Municipal';
-    }
-    
-    return 'Feriado Nacional';
-}
+    function inferHolidayType(holidayName) {
+        if (!holidayName) return 'Feriado Nacional';
 
-function generateRecurringEventsForDate(date) {
-    const dateStr = formatDateKey(date);
-    const generatedEvents = [];
-    
-    Object.keys(recurringEvents).forEach(recurringId => {
-        const recurringEvent = recurringEvents[recurringId];
-        const startDate = new Date(recurringEvent.startDate);
-        startDate.setHours(0, 0, 0, 0);
-        
-        if (recurringEvent.excludedDates && recurringEvent.excludedDates.includes(dateStr)) {
-            return; 
+        const lowerName = holidayName.toLowerCase();
+
+        if (lowerName.includes('facultativo') ||
+            lowerName.includes('ponto') ||
+            lowerName.includes('servidor') ||
+            lowerName.includes('consciência negra') ||
+            lowerName.includes('consciencia negra') ||
+            lowerName.includes('véspera') ||
+            lowerName.includes('vespera') ||
+            lowerName.includes('dia de reis') ||
+            lowerName.includes('são pedro') ||
+            lowerName.includes('sao pedro') ||
+            lowerName.includes('carnaval')) {
+            return 'Facultativo';
         }
-        
-        if (date < startDate) return;
-        
-        if (recurringEvent.endCondition === 'date') {
-            const endDate = new Date(recurringEvent.endDate);
-            if (date > endDate) return;
-        } else if (recurringEvent.endCondition === 'count') {
-            let occurrences = 0;
-            const tempDate = new Date(startDate);
-            
-            while (tempDate <= date && occurrences < recurringEvent.occurrenceCount) {
-                const tempDateStr = formatDateKey(tempDate);
-                if (recurringEvent.excludedDates && recurringEvent.excludedDates.includes(tempDateStr)) {
-                    tempDate.setDate(tempDate.getDate() + 1);
-                    continue;
-                }
-                
-                if (shouldGenerateEventOnDate(recurringEvent, tempDate)) {
-                    occurrences++;
-                    if (formatDateKey(tempDate) === dateStr && occurrences <= recurringEvent.occurrenceCount) {
-                        generatedEvents.push({ 
-                            ...recurringEvent, 
-                            originalId: recurringId,
-                            excludedDates: recurringEvent.excludedDates || []
-                        });
-                        break;
-                    }
-                }
-                tempDate.setDate(tempDate.getDate() + 1);
+
+        if (lowerName.includes('corpus christi') ||
+            lowerName.includes('sexta-feira santa') ||
+            lowerName.includes('padroeira') ||
+            lowerName.includes('apóstolo') ||
+            lowerName.includes('apostolo') ||
+            lowerName.includes('são') ||
+            lowerName.includes('sao') ||
+            lowerName.includes('nossa senhora') ||
+            lowerName.includes('todos os santos') ||
+            lowerName.includes('imaculada conceição')) {
+            return 'Feriado Religioso';
+        }
+
+        if (lowerName.includes('estadual') ||
+            lowerName.includes('municipal') ||
+            lowerName.includes('aniversário') ||
+            lowerName.includes('aniversario') ||
+            lowerName.includes('fundação') ||
+            lowerName.includes('revolução')) {
+            return 'Feriado Estadual/Municipal';
+        }
+
+        return 'Feriado Nacional';
+    }
+
+    function formatDateKey(date) {
+        return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    }
+
+    function generateRecurringEventsForDate(date) {
+        const dateStr = formatDateKey(date);
+        const generatedEvents = [];
+
+        Object.keys(recurringEvents).forEach(recurringId => {
+            const recurringEvent = recurringEvents[recurringId];
+            const startDate = new Date(recurringEvent.startDate);
+            startDate.setHours(0, 0, 0, 0);
+
+            if (recurringEvent.excludedDates && recurringEvent.excludedDates.includes(dateStr)) {
+                return;
             }
-            return;
-        }
-        
-        if (shouldGenerateEventOnDate(recurringEvent, date)) {
-            generatedEvents.push({ 
-                ...recurringEvent, 
-                originalId: recurringId,
-                excludedDates: recurringEvent.excludedDates || []
-            });
-        }
-    });
-    
-    return generatedEvents;
-}
+
+            if (date < startDate) return;
+
+            if (recurringEvent.endCondition === 'date') {
+                const endDate = new Date(recurringEvent.endDate);
+                if (date > endDate) return;
+            } else if (recurringEvent.endCondition === 'count') {
+                let occurrences = 0;
+                const tempDate = new Date(startDate);
+
+                while (tempDate <= date && occurrences < recurringEvent.occurrenceCount) {
+                    const tempDateStr = formatDateKey(tempDate);
+                    if (recurringEvent.excludedDates && recurringEvent.excludedDates.includes(tempDateStr)) {
+                        tempDate.setDate(tempDate.getDate() + 1);
+                        continue;
+                    }
+
+                    if (shouldGenerateEventOnDate(recurringEvent, tempDate)) {
+                        occurrences++;
+                        if (formatDateKey(tempDate) === dateStr && occurrences <= recurringEvent.occurrenceCount) {
+                            generatedEvents.push({
+                                ...recurringEvent,
+                                originalId: recurringId,
+                                excludedDates: recurringEvent.excludedDates || []
+                            });
+                            break;
+                        }
+                    }
+                    tempDate.setDate(tempDate.getDate() + 1);
+                }
+                return;
+            }
+
+            if (shouldGenerateEventOnDate(recurringEvent, date)) {
+                generatedEvents.push({
+                    ...recurringEvent,
+                    originalId: recurringId,
+                    excludedDates: recurringEvent.excludedDates || []
+                });
+            }
+        });
+
+        return generatedEvents;
+    }
 
     function shouldGenerateEventOnDate(recurringEvent, date) {
         const startDate = new Date(recurringEvent.startDate);
         startDate.setHours(0, 0, 0, 0);
-        
+
         if (date < startDate) return false;
-        
-        const diffTime = date.getTime() - startDate.getTime();
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        
+
         switch (recurringEvent.type) {
             case 'daily':
                 return true;
-                
+
             case 'weekly':
                 if (!recurringEvent.daysOfWeek || recurringEvent.daysOfWeek.length === 0) {
                     return date.getDay() === startDate.getDay();
                 }
                 return recurringEvent.daysOfWeek.includes(date.getDay().toString());
-                
+
             case 'monthly':
                 if (recurringEvent.monthlyOption === 'same-day') {
                     return date.getDate() === startDate.getDate();
@@ -421,193 +432,187 @@ function generateRecurringEventsForDate(date) {
                     const currentWeek = Math.ceil(date.getDate() / 7);
                     return date.getDay() === startDate.getDay() && startWeek === currentWeek;
                 }
-                
+
             case 'yearly':
                 return date.getDate() === startDate.getDate() && date.getMonth() === startDate.getMonth();
-                
+
             default:
                 return false;
         }
     }
 
-    function formatDateKey(date) {
-        return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-    }
+    function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, recurringId = null, dayType = null) {
+        const indicator = document.createElement("div");
+        indicator.title = tooltipText;
 
-
-function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, recurringId = null, dayType = null) {
-    const indicator = document.createElement("div");
-    indicator.title = tooltipText;
-    
-    if (isRecurring && recurringId) {
-        indicator.setAttribute('data-recurring-id', recurringId);
-        indicator.setAttribute('data-recurring', 'true');
-        indicator.setAttribute('data-event-text', tooltipText);
-    }
-    
-    let indicatorClass = type; 
-    
-    if (dayType && dayTypes[dayType]) {
-        indicatorClass = dayTypes[dayType].cssClass;
-    }
-    
-    indicator.className = `indicator ${indicatorClass}`;
-    
-    if (dayType && dayTypes[dayType]) {
-        const color = dayTypes[dayType].color;
-        indicator.style.background = `linear-gradient(135deg, ${color}, ${darkenColor(color, 20)})`;
-    } else {
-        indicator.style.background = '';
-    }
-    
-    const icon = document.createElement("i");
-    
-    if (dayType && dayTypes[dayType]) {
-        icon.className = dayTypes[dayType].icon;
-    } else {
-        icon.className = type === "holiday" ? "fas fa-flag" : 
-                        type === "facultative" ? "fas fa-building" :
-                        type === "religious" ? "fas fa-church" :
-                        type === "local" ? "fas fa-landmark" :
-                        type === "work" ? "fas fa-briefcase" :
-                        type === "health" ? "fas fa-heartbeat" :
-                        type === "leisure" ? "fas fa-gamepad" : "fas fa-check";
-    }
-    
-    icon.style.pointerEvents = "none";
-    icon.style.fontSize = "0.7em";
-    
-    const tooltip = document.createElement("div");
-    tooltip.className = "tooltip";
-    
-    let tooltipContent = tooltipText;
-    
-    if (dayType) {
-        tooltipContent = `<strong style="display: block; margin-bottom: 4px;">${dayType}</strong>${tooltipText}`;
-        if (dayTypes[dayType]?.description) {
-            tooltipContent += `<br><small style="display: block; margin-top: 4px; font-style: italic;">${dayTypes[dayType].description}</small>`;
+        if (isRecurring && recurringId) {
+            indicator.setAttribute('data-recurring-id', recurringId);
+            indicator.setAttribute('data-recurring', 'true');
+            indicator.setAttribute('data-event-text', tooltipText);
         }
-    }
-    
-    if (isRecurring) {
-        tooltipContent += '<br><small style="display: block; margin-top: 4px;"><i class="fas fa-redo" style="margin-right: 4px;"></i>Evento recorrente</small>';
-    }
-    
-    tooltip.innerHTML = tooltipContent;
-    
-    indicator.appendChild(icon);
-    indicator.appendChild(tooltip);
-    
-    function darkenColor(color, percent) {
-        let r = parseInt(color.slice(1, 3), 16);
-        let g = parseInt(color.slice(3, 5), 16);
-        let b = parseInt(color.slice(5, 7), 16);
-        
-        r = Math.floor(r * (100 - percent) / 100);
-        g = Math.floor(g * (100 - percent) / 100);
-        b = Math.floor(b * (100 - percent) / 100);
-        
-        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-    }
-    
-    indicator.onclick = (e) => {
-        e.stopPropagation();
-        
-        const isHoliday = type === "holiday" || type === "facultative" || 
-                         type === "religious" || type === "local" ||
-                         (dayType && (dayType === "Feriado Nacional" || 
-                                      dayType === "Facultativo" || 
-                                      dayType === "Feriado Religioso" || 
-                                      dayType === "Feriado Estadual/Municipal"));
-        
-        if (isHoliday) {
-            const holidayKey = `${day}-${currentDate.getMonth() + 1}`;
-            let holidayData = dynamicHolidays[holidayKey];
-            
-            if (typeof holidayData === 'string') {
-                holidayData = {
-                    name: holidayData,
-                    type: dayType || inferHolidayType(holidayData)
-                };
+
+        let indicatorClass = type;
+
+        if (dayType && dayTypes[dayType]) {
+            indicatorClass = dayTypes[dayType].cssClass;
+        }
+
+        indicator.className = `indicator ${indicatorClass}`;
+
+        if (dayType && dayTypes[dayType]) {
+            const color = dayTypes[dayType].color;
+            indicator.style.background = `linear-gradient(135deg, ${color}, ${darkenColor(color, 20)})`;
+        } else {
+            indicator.style.background = '';
+        }
+
+        const icon = document.createElement("i");
+
+        if (dayType && dayTypes[dayType]) {
+            icon.className = dayTypes[dayType].icon;
+        } else {
+            icon.className = type === "holiday" ? "fas fa-flag" :
+                            type === "facultative" ? "fas fa-building" :
+                            type === "religious" ? "fas fa-church" :
+                            type === "local" ? "fas fa-landmark" :
+                            type === "work" ? "fas fa-briefcase" :
+                            type === "health" ? "fas fa-heartbeat" :
+                            type === "leisure" ? "fas fa-gamepad" : "fas fa-check";
+        }
+
+        icon.style.pointerEvents = "none";
+        icon.style.fontSize = "0.7em";
+
+        const tooltip = document.createElement("div");
+        tooltip.className = "tooltip";
+
+        let tooltipContent = tooltipText;
+
+        if (dayType) {
+            tooltipContent = `<strong style="display: block; margin-bottom: 4px;">${dayType}</strong>${tooltipText}`;
+            if (dayTypes[dayType]?.description) {
+                tooltipContent += `<br><small style="display: block; margin-top: 4px; font-style: italic;">${dayTypes[dayType].description}</small>`;
             }
-            
-            openHolidayModal(dateKey, day, holidayData);
-        } else if (isRecurring) {
-            const recurringId = indicator.getAttribute('data-recurring-id');
-            const eventText = indicator.getAttribute('data-event-text') || tooltipText;
-            
-            if (recurringId) {
-                openRecurringEventModal(dateKey, day, {
-                    text: eventText,
-                    category: type,
-                    originalId: recurringId,
-                    isRecurring: true
-                });
-            } else {
-                const date = new Date(dateKey.replace(/-/g, '/'));
-                const recurringEventsForDate = generateRecurringEventsForDate(date);
-                
-                const recurringEvent = recurringEventsForDate.find(ev => 
-                    ev.text === eventText || ev.category === type
-                );
-                
-                if (recurringEvent) {
+        }
+
+        if (isRecurring) {
+            tooltipContent += '<br><small style="display: block; margin-top: 4px;"><i class="fas fa-redo" style="margin-right: 4px;"></i>Evento recorrente</small>';
+        }
+
+        tooltip.innerHTML = tooltipContent;
+
+        indicator.appendChild(icon);
+        indicator.appendChild(tooltip);
+
+        function darkenColor(color, percent) {
+            let r = parseInt(color.slice(1, 3), 16);
+            let g = parseInt(color.slice(3, 5), 16);
+            let b = parseInt(color.slice(5, 7), 16);
+
+            r = Math.floor(r * (100 - percent) / 100);
+            g = Math.floor(g * (100 - percent) / 100);
+            b = Math.floor(b * (100 - percent) / 100);
+
+            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        }
+
+        indicator.onclick = (e) => {
+            e.stopPropagation();
+
+            const isHoliday = type === "holiday" || type === "facultative" ||
+                             type === "religious" || type === "local" ||
+                             (dayType && (dayType === "Feriado Nacional" ||
+                                          dayType === "Facultativo" ||
+                                          dayType === "Feriado Religioso" ||
+                                          dayType === "Feriado Estadual/Municipal"));
+
+            if (isHoliday) {
+                const holidayKey = `${day}-${currentDate.getMonth() + 1}`;
+                let holidayData = dynamicHolidays[holidayKey];
+
+                if (typeof holidayData === 'string') {
+                    holidayData = {
+                        name: holidayData,
+                        type: dayType || inferHolidayType(holidayData)
+                    };
+                }
+
+                openHolidayModal(dateKey, day, holidayData);
+            } else if (isRecurring) {
+                const recId = indicator.getAttribute('data-recurring-id');
+                const eventText = indicator.getAttribute('data-event-text') || tooltipText;
+
+                if (recId) {
                     openRecurringEventModal(dateKey, day, {
-                        text: recurringEvent.text || eventText,
-                        category: recurringEvent.category || type,
-                        originalId: recurringEvent.originalId,
+                        text: eventText,
+                        category: type,
+                        originalId: recId,
                         isRecurring: true
                     });
                 } else {
-                    openModal(dateKey, day);
-                }
-            }
-        } else {
-            openModal(dateKey, day);
-        }
-    };
-    
-    indicator.addEventListener('mouseenter', function() {
-        const tooltip = this.querySelector('.tooltip');
-        if (tooltip) {
-            tooltip.style.visibility = 'visible';
-            tooltip.style.opacity = '1';
-        }
-    });
-    
-    indicator.addEventListener('mouseleave', function() {
-        const tooltip = this.querySelector('.tooltip');
-        if (tooltip) {
-            tooltip.style.visibility = 'hidden';
-            tooltip.style.opacity = '0';
-        }
-    });
-    
-    return indicator;
-}
+                    const date = new Date(dateKey.replace(/-/g, '/'));
+                    const recurringEventsForDate = generateRecurringEventsForDate(date);
 
+                    const recurringEvent = recurringEventsForDate.find(ev =>
+                        ev.text === eventText || ev.category === type
+                    );
+
+                    if (recurringEvent) {
+                        openRecurringEventModal(dateKey, day, {
+                            text: recurringEvent.text || eventText,
+                            category: recurringEvent.category || type,
+                            originalId: recurringEvent.originalId,
+                            isRecurring: true
+                        });
+                    } else {
+                        openModal(dateKey, day);
+                    }
+                }
+            } else {
+                openModal(dateKey, day);
+            }
+        };
+
+        indicator.addEventListener('mouseenter', function() {
+            const tt = this.querySelector('.tooltip');
+            if (tt) {
+                tt.style.visibility = 'visible';
+                tt.style.opacity = '1';
+            }
+        });
+
+        indicator.addEventListener('mouseleave', function() {
+            const tt = this.querySelector('.tooltip');
+            if (tt) {
+                tt.style.visibility = 'hidden';
+                tt.style.opacity = '0';
+            }
+        });
+
+        return indicator;
+    }
 
     async function renderCalendar(showLoading = false) {
         if (showLoading) {
             toggleSpinner(true, "Carregando calendário...");
         }
-        
+
         updateSearchFields();
-        
+
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
-        
+
         updateAppTitle();
         monthYear.innerText = currentDate.toLocaleDateString("pt-BR", {
             month: "long",
             year: "numeric"
         }).replace(/^./, c => c.toUpperCase());
-        
+
         const monthContainer = document.createElement("div");
         monthContainer.className = "calendar-month current";
         monthContainer.dataset.year = year;
         monthContainer.dataset.month = month;
-        
+
         const weekdays = document.createElement("div");
         weekdays.className = "weekdays";
         weekdays.innerHTML = `
@@ -620,431 +625,427 @@ function createIndicator(type, tooltipText, dateKey, day, isRecurring = false, r
             <div>Sáb</div>
         `;
         monthContainer.appendChild(weekdays);
-        
+
         const daysContainer = document.createElement("div");
         daysContainer.className = "days";
-        
+
         const firstDay = new Date(year, month, 1).getDay();
         const lastDate = new Date(year, month + 1, 0).getDate();
-        
+
         for (let i = 0; i < firstDay; i++) {
             daysContainer.appendChild(document.createElement("div"));
         }
-        
+
         let holidayCount = 0;
         let personalEventCount = 0;
-        
+
         for (let day = 1; day <= lastDate; day++) {
             const dateEl = document.createElement("div");
             const date = new Date(year, month, day);
             const dateKey = formatDateKey(date);
             const holidayKey = `${day}-${month + 1}`;
-            
+
             const dayNumber = document.createElement("div");
             dayNumber.className = "day-number";
             dayNumber.textContent = day;
             dateEl.appendChild(dayNumber);
-            
+
             const dayIndicators = document.createElement("div");
             dayIndicators.className = "day-indicators";
-            
+
             let eventCount = 0;
-            let hasHoliday = false;
-            let hasPersonalEvent = false;
-            
-if (dynamicHolidays[holidayKey]) {
-    holidayCount++;
-    hasHoliday = true;
-    
-    let holidayData = dynamicHolidays[holidayKey];
-    let holidayName = '';
-    let holidayType = null;
-    
-    if (typeof holidayData === 'object' && holidayData !== null) {
-        holidayName = holidayData.name || holidayData;
-        holidayType = holidayData.type;
-    } else {
-        holidayName = holidayData;
-        holidayType = inferHolidayType(holidayName);
-    }
-    
-    let indicatorType = 'holiday'; 
-    
-    if (holidayType === 'Facultativo') {
-        indicatorType = 'facultative';
-    } else if (holidayType === 'Feriado Religioso') {
-        indicatorType = 'religious';
-    } else if (holidayType === 'Feriado Estadual/Municipal') {
-        indicatorType = 'local';
-    }
-    
-    const holidayIndicator = createIndicator(
-        indicatorType, 
-        holidayName, 
-        dateKey, 
-        day, 
-        false, 
-        holidayType 
-    );
-    dayIndicators.appendChild(holidayIndicator);
-    eventCount++;
-}
-            
-        if (events[dateKey]) {
-            personalEventCount++;
-            hasPersonalEvent = true;
-            const eventData = events[dateKey];
-            
-            const isRecurringEvent = eventData.recurringId || eventData.isFromRecurring;
-            
-            const eventIndicator = createIndicator(
-                eventData.category || "personal", 
-                eventData.text, 
-                dateKey, 
-                day,
-                isRecurringEvent, 
-                eventData.originalRecurringId 
-            );
-            
-            if (isRecurringEvent) {
-                eventIndicator.setAttribute('data-recurring-id', eventData.originalRecurringId || '');
-                eventIndicator.setAttribute('data-recurring', 'true');
-                eventIndicator.setAttribute('data-event-text', eventData.text);
+
+            if (dynamicHolidays[holidayKey]) {
+                holidayCount++;
+
+                let holidayData = dynamicHolidays[holidayKey];
+                let holidayName = '';
+                let holidayType = null;
+
+                if (typeof holidayData === 'object' && holidayData !== null) {
+                    holidayName = holidayData.name || holidayData;
+                    holidayType = holidayData.type;
+                } else {
+                    holidayName = holidayData;
+                    holidayType = inferHolidayType(holidayName);
+                }
+
+                let indicatorType = 'holiday';
+
+                if (holidayType === 'Facultativo') {
+                    indicatorType = 'facultative';
+                } else if (holidayType === 'Feriado Religioso') {
+                    indicatorType = 'religious';
+                } else if (holidayType === 'Feriado Estadual/Municipal') {
+                    indicatorType = 'local';
+                }
+
+                const holidayIndicator = createIndicator(
+                    indicatorType,
+                    holidayName,
+                    dateKey,
+                    day,
+                    false,
+                    holidayType
+                );
+                dayIndicators.appendChild(holidayIndicator);
+                eventCount++;
             }
-            
-            dayIndicators.appendChild(eventIndicator);
-            eventCount++;
-        }
-            
+
+            if (events[dateKey]) {
+                personalEventCount++;
+                const eventData = events[dateKey];
+
+                const isRecurringEvent = eventData.recurringId || eventData.isFromRecurring;
+
+                const eventIndicator = createIndicator(
+                    eventData.category || "personal",
+                    eventData.text,
+                    dateKey,
+                    day,
+                    isRecurringEvent,
+                    eventData.originalRecurringId
+                );
+
+                if (isRecurringEvent) {
+                    eventIndicator.setAttribute('data-recurring-id', eventData.originalRecurringId || '');
+                    eventIndicator.setAttribute('data-recurring', 'true');
+                    eventIndicator.setAttribute('data-event-text', eventData.text);
+                }
+
+                dayIndicators.appendChild(eventIndicator);
+                eventCount++;
+            }
+
             const recurringEventsForDate = generateRecurringEventsForDate(date);
             recurringEventsForDate.forEach(recurringEvent => {
                 personalEventCount++;
-                hasPersonalEvent = true;
                 const eventIndicator = createIndicator(
-                    recurringEvent.category || "personal", 
-                    recurringEvent.text, 
-                    dateKey, 
+                    recurringEvent.category || "personal",
+                    recurringEvent.text,
+                    dateKey,
                     day,
                     true
                 );
                 dayIndicators.appendChild(eventIndicator);
                 eventCount++;
             });
-            
+
             if (showSeasons) {
                 addSeasonIndicator(dateEl, date);
             }
-            
+
             if (eventCount > 3) {
                 dayIndicators.classList.add("compact-indicators");
             }
-            
+
             dateEl.appendChild(dayIndicators);
-            
+
             if (date.getDay() === 0 || date.getDay() === 6) {
                 dateEl.classList.add("weekend");
             }
-            
+
             const today = new Date();
             if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
                 dateEl.classList.add("today");
             }
-            
-dateEl.onclick = (e) => {
-    if (e.target.closest('.indicator') || e.target.closest('.season-indicator')) {
-        return;
-    }
-    
-    openDayModal(dateKey, day);
-};
-            
+
+            dateEl.onclick = (e) => {
+                if (e.target.closest('.indicator') || e.target.closest('.season-indicator')) {
+                    return;
+                }
+                openDayModal(dateKey, day);
+            };
+
             daysContainer.appendChild(dateEl);
         }
-        
+
         monthContainer.appendChild(daysContainer);
-        
+
         calendarContent.innerHTML = '';
         calendarContent.appendChild(monthContainer);
-        
+
         holidayCountEl.textContent = holidayCount;
         eventCountEl.textContent = personalEventCount;
         renderEventList();
-        
+
         const seasonLegend = addSeasonLegend();
         if (showSeasons) {
             seasonLegend.classList.add('show');
         } else {
             seasonLegend.classList.remove('show');
         }
-        
+
         if (showLoading) {
             setTimeout(() => {
                 toggleSpinner(false);
             }, 500);
         }
+
+        updateClearDataButtonVisibility();
     }
 
-  function renderEventList() {
-    eventList.innerHTML = "";
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
-    
-    const monthEvents = [];
-    
-    Object.keys(dynamicHolidays).forEach(key => {
-        const [day, holidayMonth] = key.split("-").map(Number);
-        if (holidayMonth === month) {
-            const holidayData = dynamicHolidays[key];
-            let holidayName = '';
-            let holidayType = 'holiday';
-            
-            if (typeof holidayData === 'object') {
-                holidayName = holidayData.name;
-                holidayType = holidayData.type === 'Facultativo' ? 'facultative' :
-                             holidayData.type === 'Feriado Religioso' ? 'religious' :
-                             holidayData.type === 'Feriado Estadual/Municipal' ? 'local' : 'holiday';
-            } else {
-                holidayName = holidayData;
-                const inferredType = inferHolidayType(holidayName);
-                holidayType = inferredType === 'Facultativo' ? 'facultative' :
-                             inferredType === 'Feriado Religioso' ? 'religious' :
-                             inferredType === 'Feriado Estadual/Municipal' ? 'local' : 'holiday';
-            }
-            
-            monthEvents.push({
-                date: new Date(year, month - 1, day),
-                text: holidayName,
-                type: holidayType,
-                day: day,
-                isRecurring: false,
-                originalType: typeof holidayData === 'object' ? holidayData.type : 'Feriado Nacional'
-            });
-        }
-    });
-    
-    Object.keys(events).forEach(dateKey => {
-        const [eventYear, eventMonth, eventDay] = dateKey.split("-").map(Number);
-        
-        if (eventYear === year && eventMonth === month) {
-            const eventData = events[dateKey];
-            monthEvents.push({
-                date: new Date(eventYear, eventMonth - 1, eventDay),
-                text: eventData.text,
-                type: eventData.category || 'personal',
-                day: eventDay,
-                isRecurring: false
-            });
-        }
-    });
-    
-    for (let day = 1; day <= 31; day++) {
-        try {
-            const date = new Date(year, month - 1, day);
-            if (date.getMonth() !== month - 1) break;
-            
-            const recurringEventsForDate = generateRecurringEventsForDate(date);
-            recurringEventsForDate.forEach(recurringEvent => {
+    function renderEventList() {
+        eventList.innerHTML = "";
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1;
+
+        const monthEvents = [];
+
+        Object.keys(dynamicHolidays).forEach(key => {
+            const [day, holidayMonth] = key.split("-").map(Number);
+            if (holidayMonth === month) {
+                const holidayData = dynamicHolidays[key];
+                let holidayName = '';
+                let holidayType = 'holiday';
+
+                if (typeof holidayData === 'object') {
+                    holidayName = holidayData.name;
+                    holidayType = holidayData.type === 'Facultativo' ? 'facultative' :
+                                 holidayData.type === 'Feriado Religioso' ? 'religious' :
+                                 holidayData.type === 'Feriado Estadual/Municipal' ? 'local' : 'holiday';
+                } else {
+                    holidayName = holidayData;
+                    const inferredType = inferHolidayType(holidayName);
+                    holidayType = inferredType === 'Facultativo' ? 'facultative' :
+                                 inferredType === 'Feriado Religioso' ? 'religious' :
+                                 inferredType === 'Feriado Estadual/Municipal' ? 'local' : 'holiday';
+                }
+
                 monthEvents.push({
-                    date: date,
-                    text: recurringEvent.text,
-                    type: recurringEvent.category || 'personal',
+                    date: new Date(year, month - 1, day),
+                    text: holidayName,
+                    type: holidayType,
                     day: day,
-                    isRecurring: true,
-                    originalId: recurringEvent.originalId
+                    isRecurring: false,
+                    originalType: typeof holidayData === 'object' ? holidayData.type : 'Feriado Nacional'
                 });
-            });
-        } catch (e) {
-            break;
-        }
-    }
-    
-    monthEvents.sort((a, b) => a.day - b.day);
-    
-    monthEvents.forEach(event => {
-        const listItem = document.createElement("li");
-        listItem.className = `event-list-item ${event.type}-item`;
-        
-        const dateObj = new Date(event.date);
-        const weekday = dateObj.toLocaleDateString("pt-BR", { 
-            weekday: 'short' 
-        }).replace('.', '').toUpperCase();
-        const day = dateObj.getDate();
-        
-        let badgeClass = '';
-        let badgeText = '';
-        
-        if (event.type === 'facultative') {
-            badgeClass = 'facultative-badge';
-            badgeText = 'FACULTATIVO';
-        } else if (event.type === 'religious') {
-            badgeClass = 'religious-badge';
-            badgeText = 'RELIGIOSO';
-        } else if (event.type === 'local') {
-            badgeClass = 'local-badge';
-            badgeText = 'LOCAL';
-        } else if (event.type === 'holiday') {
-            badgeClass = 'holiday-badge';
-            badgeText = 'FERIADO';
-        } else {
-            badgeClass = `${event.type}-badge`;
-            badgeText = event.type === 'work' ? 'TRABALHO' :
-                       event.type === 'health' ? 'SAÚDE' :
-                       event.type === 'leisure' ? 'LAZER' : 'PESSOAL';
-        }
-        
-        listItem.innerHTML = `
-            <div class="event-date">
-                <span class="weekday">${weekday}</span>
-                <span class="day">${day}</span>
-            </div>
-            <div class="event-text">${event.text}</div>
-            <span class="event-type-badge ${badgeClass}">${badgeText}</span>
-        `;
-        
-        if (event.isRecurring) {
-            const eventTextDiv = listItem.querySelector('.event-text');
-            const recurringBadge = document.createElement('span');
-            recurringBadge.className = 'recurring-badge';
-            recurringBadge.innerHTML = '<i class="fas fa-redo"></i> Recorrente';
-            eventTextDiv.appendChild(recurringBadge);
-        }
-        
-listItem.onclick = (e) => {
-    if (e.target.closest('.event-type-badge') || e.target.closest('.recurring-badge')) {
-        return;
-    }
-    
-    const day = event.day;
-    const dateKey = `${year}-${month}-${day}`;
-    
-    if (event.type === 'holiday' || event.type === 'facultative' || event.type === 'religious' || event.type === 'local') {
-        const holidayKey = `${day}-${month}`;
-        let holidayData = dynamicHolidays[holidayKey];
-        
-        if (typeof holidayData === 'string') {
-            holidayData = {
-                name: holidayData,
-                type: event.originalType || inferHolidayType(holidayData)
-            };
-        }
-        
-        openHolidayModal(dateKey, day, holidayData);
-    } else if (event.isRecurring) {
-        openRecurringEventModal(dateKey, day, {
-            text: event.text,
-            category: event.type,
-            originalId: event.originalId,
-            dateKey: dateKey,
-            isRecurring: true
+            }
         });
-    } else {
-        const eventData = events[dateKey];
-        
-        if (eventData) {
-            openModal(dateKey, day);
-        } else {
-            const date = new Date(year, month - 1, day);
-            const recurringEventsForDate = generateRecurringEventsForDate(date);
-            
-            const matchingRecurringEvent = recurringEventsForDate.find(re => 
-                re.text === event.text && re.category === event.type
-            );
-            
-            if (matchingRecurringEvent) {
-                openRecurringEventModal(dateKey, day, {
-                    text: matchingRecurringEvent.text,
-                    category: matchingRecurringEvent.category,
-                    originalId: matchingRecurringEvent.originalId,
-                    dateKey: dateKey,
-                    isRecurring: true
+
+        Object.keys(events).forEach(dateKey => {
+            const [eventYear, eventMonth, eventDay] = dateKey.split("-").map(Number);
+
+            if (eventYear === year && eventMonth === month) {
+                const eventData = events[dateKey];
+                monthEvents.push({
+                    date: new Date(eventYear, eventMonth - 1, eventDay),
+                    text: eventData.text,
+                    type: eventData.category || 'personal',
+                    day: eventDay,
+                    isRecurring: false
                 });
-            } else {
-                openDayModal(dateKey, day);
+            }
+        });
+
+        for (let day = 1; day <= 31; day++) {
+            try {
+                const date = new Date(year, month - 1, day);
+                if (date.getMonth() !== month - 1) break;
+
+                const recurringEventsForDate = generateRecurringEventsForDate(date);
+                recurringEventsForDate.forEach(recurringEvent => {
+                    monthEvents.push({
+                        date: date,
+                        text: recurringEvent.text,
+                        type: recurringEvent.category || 'personal',
+                        day: day,
+                        isRecurring: true,
+                        originalId: recurringEvent.originalId
+                    });
+                });
+            } catch (e) {
+                break;
             }
         }
+
+        monthEvents.sort((a, b) => a.day - b.day);
+
+        monthEvents.forEach(event => {
+            const listItem = document.createElement("li");
+            listItem.className = `event-list-item ${event.type}-item`;
+
+            const dateObj = new Date(event.date);
+            const weekday = dateObj.toLocaleDateString("pt-BR", {
+                weekday: 'short'
+            }).replace('.', '').toUpperCase();
+            const day = dateObj.getDate();
+
+            let badgeClass = '';
+            let badgeText = '';
+
+            if (event.type === 'facultative') {
+                badgeClass = 'facultative-badge';
+                badgeText = 'FACULTATIVO';
+            } else if (event.type === 'religious') {
+                badgeClass = 'religious-badge';
+                badgeText = 'RELIGIOSO';
+            } else if (event.type === 'local') {
+                badgeClass = 'local-badge';
+                badgeText = 'LOCAL';
+            } else if (event.type === 'holiday') {
+                badgeClass = 'holiday-badge';
+                badgeText = 'FERIADO';
+            } else {
+                badgeClass = `${event.type}-badge`;
+                badgeText = event.type === 'work' ? 'TRABALHO' :
+                           event.type === 'health' ? 'SAÚDE' :
+                           event.type === 'leisure' ? 'LAZER' : 'PESSOAL';
+            }
+
+            listItem.innerHTML = `
+                <div class="event-date">
+                    <span class="weekday">${weekday}</span>
+                    <span class="day">${day}</span>
+                </div>
+                <div class="event-text">${event.text}</div>
+                <span class="event-type-badge ${badgeClass}">${badgeText}</span>
+            `;
+
+            if (event.isRecurring) {
+                const eventTextDiv = listItem.querySelector('.event-text');
+                const recurringBadge = document.createElement('span');
+                recurringBadge.className = 'recurring-badge';
+                recurringBadge.innerHTML = '<i class="fas fa-redo"></i> Recorrente';
+                eventTextDiv.appendChild(recurringBadge);
+            }
+
+            listItem.onclick = (e) => {
+                if (e.target.closest('.event-type-badge') || e.target.closest('.recurring-badge')) {
+                    return;
+                }
+
+                const day = event.day;
+                const dateKey = `${year}-${month}-${day}`;
+
+                if (event.type === 'holiday' || event.type === 'facultative' || event.type === 'religious' || event.type === 'local') {
+                    const holidayKey = `${day}-${month}`;
+                    let holidayData = dynamicHolidays[holidayKey];
+
+                    if (typeof holidayData === 'string') {
+                        holidayData = {
+                            name: holidayData,
+                            type: event.originalType || inferHolidayType(holidayData)
+                        };
+                    }
+
+                    openHolidayModal(dateKey, day, holidayData);
+                } else if (event.isRecurring) {
+                    openRecurringEventModal(dateKey, day, {
+                        text: event.text,
+                        category: event.type,
+                        originalId: event.originalId,
+                        dateKey: dateKey,
+                        isRecurring: true
+                    });
+                } else {
+                    const eventData = events[dateKey];
+
+                    if (eventData) {
+                        openModal(dateKey, day);
+                    } else {
+                        const date = new Date(year, month - 1, day);
+                        const recurringEventsForDate = generateRecurringEventsForDate(date);
+
+                        const matchingRecurringEvent = recurringEventsForDate.find(re =>
+                            re.text === event.text && re.category === event.type
+                        );
+
+                        if (matchingRecurringEvent) {
+                            openRecurringEventModal(dateKey, day, {
+                                text: matchingRecurringEvent.text,
+                                category: matchingRecurringEvent.category,
+                                originalId: matchingRecurringEvent.originalId,
+                                dateKey: dateKey,
+                                isRecurring: true
+                            });
+                        } else {
+                            openDayModal(dateKey, day);
+                        }
+                    }
+                }
+            };
+            eventList.appendChild(listItem);
+        });
+
+        if (monthEvents.length === 0) {
+            const listItem = document.createElement("li");
+            listItem.className = "event-list-item empty-state";
+            listItem.innerHTML = `
+                <div class="empty-state-content">
+                    <i class="far fa-calendar-times"></i>
+                    <div>
+                        <p class="empty-state-title">Nenhum compromisso este mês</p>
+                        <p class="empty-state-subtitle">Clique em um dia para adicionar um compromisso</p>
+                    </div>
+                </div>
+            `;
+            eventList.appendChild(listItem);
+        }
+
+        holidayCountEl.textContent = monthEvents.filter(e => ['holiday', 'facultative', 'religious', 'local'].includes(e.type)).length;
+        eventCountEl.textContent = monthEvents.filter(e => ['personal', 'work', 'health', 'leisure'].includes(e.type)).length;
     }
-};
-        eventList.appendChild(listItem);
-    });
-    
-    if (monthEvents.length === 0) {
-        const listItem = document.createElement("li");
-        listItem.className = "event-list-item empty-state";
-        listItem.innerHTML = `
-            <div class="empty-state-content">
-                <i class="far fa-calendar-times"></i>
-                <div>
-                    <p class="empty-state-title">Nenhum compromisso este mês</p>
-                    <p class="empty-state-subtitle">Clique em um dia para adicionar um compromisso</p>
+
+    function openRecurringEventModal(dateKey, day, event) {
+        const modalEl = document.createElement('div');
+        modalEl.className = 'modal';
+        modalEl.id = 'recurring-event-modal';
+        modalEl.style.display = 'flex';
+
+        const [year, month] = dateKey.split("-");
+        const formattedDate = new Date(year, month - 1, day).toLocaleDateString("pt-BR", {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }).replace(/^./, c => c.toUpperCase());
+
+        modalEl.innerHTML = `
+            <div class="modal-content" style="max-width: 500px;">
+                <h2><i class="fas fa-redo"></i> Evento Recorrente</h2>
+
+                <div class="form-group">
+                    <p style="text-align: center; font-size: 1.1em; margin: 20px 0;">
+                        <strong>${event.text}</strong><br>
+                        <small style="color: var(--text-light);">${formattedDate}</small>
+                    </p>
+
+                    <div style="background: var(--weekend); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                        <p style="margin: 0; text-align: center;">
+                            <i class="fas fa-info-circle" style="color: var(--accent); margin-right: 8px;"></i>
+                            Este é um evento recorrente. O que você gostaria de fazer?
+                        </p>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="justify-content: center;">
+                    <button id="recurring-edit-this" class="confirm-btn"
+                            style="background: var(--accent); color: white; min-width: 140px;">
+                        <i class="fas fa-edit"></i> Editar Este
+                    </button>
+                    <button id="recurring-delete-this" class="confirm-btn"
+                            style="background: #f59e0b; color: white; min-width: 140px;">
+                        <i class="fas fa-trash"></i> Excluir Este
+                    </button>
+                    <button id="recurring-delete-all" class="confirm-btn"
+                            style="background: var(--holiday-color); color: white; min-width: 140px;">
+                        <i class="fas fa-ban"></i> Excluir Tudo
+                    </button>
+                    <button id="recurring-cancel" class="confirm-btn"
+                            style="background: var(--weekend); color: var(--text); min-width: 140px;">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
                 </div>
             </div>
         `;
-        eventList.appendChild(listItem);
-    }
-    
-    holidayCountEl.textContent = monthEvents.filter(e => ['holiday', 'facultative', 'religious', 'local'].includes(e.type)).length;
-    eventCountEl.textContent = monthEvents.filter(e => ['personal', 'work', 'health', 'leisure'].includes(e.type)).length;
-}
 
-function openRecurringEventModal(dateKey, day, event) {
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.id = 'recurring-event-modal';
-    modal.style.display = 'flex';
-    
-    const [year, month] = dateKey.split("-");
-    const formattedDate = new Date(year, month - 1, day).toLocaleDateString("pt-BR", {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    }).replace(/^./, c => c.toUpperCase());
-    
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 500px;">
-            <h2><i class="fas fa-redo"></i> Evento Recorrente</h2>
-            
-            <div class="form-group">
-                <p style="text-align: center; font-size: 1.1em; margin: 20px 0;">
-                    <strong>${event.text}</strong><br>
-                    <small style="color: var(--text-light);">${formattedDate}</small>
-                </p>
-                
-                <div style="background: var(--weekend); padding: 20px; border-radius: 10px; margin: 20px 0;">
-                    <p style="margin: 0; text-align: center;">
-                        <i class="fas fa-info-circle" style="color: var(--accent); margin-right: 8px;"></i>
-                        Este é um evento recorrente. O que você gostaria de fazer?
-                    </p>
-                </div>
-            </div>
-            
-            <div class="modal-actions" style="justify-content: center;">
-                <button id="recurring-edit-this" class="confirm-btn" 
-                        style="background: var(--accent); color: white; min-width: 140px;">
-                    <i class="fas fa-edit"></i> Editar Este
-                </button>
-                <button id="recurring-delete-this" class="confirm-btn" 
-                        style="background: #f59e0b; color: white; min-width: 140px;">
-                    <i class="fas fa-trash"></i> Excluir Este
-                </button>
-                <button id="recurring-delete-all" class="confirm-btn" 
-                        style="background: var(--holiday-color); color: white; min-width: 140px;">
-                    <i class="fas fa-ban"></i> Excluir Tudo
-                </button>
-                <button id="recurring-cancel" class="confirm-btn" 
-                        style="background: var(--weekend); color: var(--text); min-width: 140px;">
-                    <i class="fas fa-times"></i> Cancelar
-                </button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    
-document.getElementById('recurring-edit-this').onclick = () => {
-    editThisOccurrence(event, dateKey, day);
-};
-    
+        document.body.appendChild(modalEl);
+
+        document.getElementById('recurring-edit-this').onclick = () => {
+            editThisOccurrence(event, dateKey, day);
+        };
+
         document.getElementById('recurring-delete-this').onclick = () => {
             deleteThisOccurrence(event, dateKey, day);
         };
@@ -1052,111 +1053,110 @@ document.getElementById('recurring-edit-this').onclick = () => {
         document.getElementById('recurring-delete-all').onclick = () => {
             deleteAllOccurrences(event, day);
         };
-    
-    document.getElementById('recurring-cancel').onclick = () => {
-        modal.remove();
-    };
-    
-    modal.onclick = (e) => {
-        if (e.target === modal) {
-            modal.remove();
-        }
-    };
-}
 
+        document.getElementById('recurring-cancel').onclick = () => {
+            modalEl.remove();
+        };
 
-function editThisOccurrence(event, dateKey, day) {
-    const modal = document.getElementById('recurring-event-modal');
-    if (modal) modal.remove();
-    
-    events[dateKey] = {
-        text: event.text,
-        category: event.category || 'personal',
-        date: dateKey,
-        isFromRecurring: true,
-        originalRecurringId: event.originalId,
-        excludedFromRecurring: true
-    };
-    
-    localStorage.setItem("events", JSON.stringify(events));
-    
-    if (event.originalId && recurringEvents[event.originalId]) {
-        if (!recurringEvents[event.originalId].excludedDates) {
-            recurringEvents[event.originalId].excludedDates = [];
-        }
-        recurringEvents[event.originalId].excludedDates.push(dateKey);
-        localStorage.setItem("recurringEvents", JSON.stringify(recurringEvents));
+        modalEl.onclick = (e) => {
+            if (e.target === modalEl) {
+                modalEl.remove();
+            }
+        };
     }
-    
-    openModal(dateKey, day);
-}
 
-function deleteThisOccurrence(event, dateKey, day) {
-    const modal = document.getElementById('recurring-event-modal');
-    if (modal) modal.remove();
-    
-    showConfirmModal(
-        "Excluir Esta Ocorrência",
-        "Tem certeza que deseja excluir apenas esta ocorrência do evento recorrente?\n\nEsta ação removerá apenas este evento específico, mantendo os demais da série.",
-        'warning'
-    ).then((confirmed) => {
-        if (confirmed) {
-            if (events[dateKey]) {
-                delete events[dateKey];
-            }
-            
-            if (event.originalId && recurringEvents[event.originalId]) {
-                if (!recurringEvents[event.originalId].excludedDates) {
-                    recurringEvents[event.originalId].excludedDates = [];
-                }
-                
-                if (!recurringEvents[event.originalId].excludedDates.includes(dateKey)) {
-                    recurringEvents[event.originalId].excludedDates.push(dateKey);
-                }
-                
-                localStorage.setItem("recurringEvents", JSON.stringify(recurringEvents));
-            }
-            
-            localStorage.setItem("events", JSON.stringify(events));
-            renderCalendar(true);
-            
-            showModalMessage("Sucesso", "Esta ocorrência do evento recorrente foi excluída.", 'info');
-        } else {
-            openRecurringEventModal(dateKey, day, event);
-        }
-    });
-}
+    function editThisOccurrence(event, dateKey, day) {
+        const modalEl = document.getElementById('recurring-event-modal');
+        if (modalEl) modalEl.remove();
 
-function deleteAllOccurrences(event, day) {
-    const modal = document.getElementById('recurring-event-modal');
-    if (modal) modal.remove();
-    
-    showConfirmModal(
-        "Excluir Toda a Série",
-        "Tem certeza que deseja excluir TODA a série de eventos recorrentes?\nEsta ação não pode ser desfeita.",
-        'error'
-    ).then((confirmed) => {
-        if (confirmed && event.originalId) {
-            delete recurringEvents[event.originalId];
+        events[dateKey] = {
+            text: event.text,
+            category: event.category || 'personal',
+            date: dateKey,
+            isFromRecurring: true,
+            originalRecurringId: event.originalId,
+            excludedFromRecurring: true
+        };
+
+        localStorage.setItem("events", JSON.stringify(events));
+
+        if (event.originalId && recurringEvents[event.originalId]) {
+            if (!recurringEvents[event.originalId].excludedDates) {
+                recurringEvents[event.originalId].excludedDates = [];
+            }
+            recurringEvents[event.originalId].excludedDates.push(dateKey);
             localStorage.setItem("recurringEvents", JSON.stringify(recurringEvents));
-            
-            Object.keys(events).forEach(key => {
-                if (events[key]?.originalRecurringId === event.originalId) {
-                    delete events[key];
-                }
-            });
-            
-            localStorage.setItem("events", JSON.stringify(events));
-            renderCalendar(true);
-            
-            showModalMessage("Sucesso", "Toda a série de eventos recorrentes foi excluída.", 'info');
-        } else if (!confirmed) {
-            const [year, month] = event.dateKey ? event.dateKey.split("-") : 
-                [currentDate.getFullYear(), currentDate.getMonth() + 1];
-            openRecurringEventModal(`${year}-${month}-${day}`, day, event);
         }
-    });
-}
+
+        openModal(dateKey, day);
+    }
+
+    function deleteThisOccurrence(event, dateKey, day) {
+        const modalEl = document.getElementById('recurring-event-modal');
+        if (modalEl) modalEl.remove();
+
+        showConfirmModal(
+            "Excluir Esta Ocorrência",
+            "Tem certeza que deseja excluir apenas esta ocorrência do evento recorrente?\n\nEsta ação removerá apenas este evento específico, mantendo os demais da série.",
+            'warning'
+        ).then((confirmed) => {
+            if (confirmed) {
+                if (events[dateKey]) {
+                    delete events[dateKey];
+                }
+
+                if (event.originalId && recurringEvents[event.originalId]) {
+                    if (!recurringEvents[event.originalId].excludedDates) {
+                        recurringEvents[event.originalId].excludedDates = [];
+                    }
+
+                    if (!recurringEvents[event.originalId].excludedDates.includes(dateKey)) {
+                        recurringEvents[event.originalId].excludedDates.push(dateKey);
+                    }
+
+                    localStorage.setItem("recurringEvents", JSON.stringify(recurringEvents));
+                }
+
+                localStorage.setItem("events", JSON.stringify(events));
+                renderCalendar(true);
+
+                showModalMessage("Sucesso", "Esta ocorrência do evento recorrente foi excluída.", 'info');
+            } else {
+                openRecurringEventModal(dateKey, day, event);
+            }
+        });
+    }
+
+    function deleteAllOccurrences(event, day) {
+        const modalEl = document.getElementById('recurring-event-modal');
+        if (modalEl) modalEl.remove();
+
+        showConfirmModal(
+            "Excluir Toda a Série",
+            "Tem certeza que deseja excluir TODA a série de eventos recorrentes?\nEsta ação não pode ser desfeita.",
+            'error'
+        ).then((confirmed) => {
+            if (confirmed && event.originalId) {
+                delete recurringEvents[event.originalId];
+                localStorage.setItem("recurringEvents", JSON.stringify(recurringEvents));
+
+                Object.keys(events).forEach(key => {
+                    if (events[key]?.originalRecurringId === event.originalId) {
+                        delete events[key];
+                    }
+                });
+
+                localStorage.setItem("events", JSON.stringify(events));
+                renderCalendar(true);
+
+                showModalMessage("Sucesso", "Toda a série de eventos recorrentes foi excluída.", 'info');
+            } else if (!confirmed) {
+                const [year, month] = event.dateKey ? event.dateKey.split("-") :
+                    [currentDate.getFullYear(), currentDate.getMonth() + 1];
+                openRecurringEventModal(`${year}-${month}-${day}`, day, event);
+            }
+        });
+    }
 
     function openModal(dateKey, day) {
         selectedDate = dateKey;
@@ -1167,19 +1167,19 @@ function deleteAllOccurrences(event, day) {
             month: 'long',
             year: 'numeric'
         }).replace(/^./, c => c.toUpperCase());
-        
+
         modalDate.innerText = formattedDate;
-        
+
         const existingEvent = events[dateKey];
         if (existingEvent) {
             input.value = existingEvent.text;
             document.querySelector(`#category-${existingEvent.category || 'personal'}`).checked = true;
-            
+
             if (existingEvent.recurringId) {
                 recurrenceToggle.checked = true;
                 recurrenceOptions.classList.add('show');
             }
-            
+
             deleteBtn.style.display = "block";
         } else {
             input.value = "";
@@ -1187,7 +1187,7 @@ function deleteAllOccurrences(event, day) {
             recurrenceToggle.checked = false;
             recurrenceOptions.classList.remove('show');
             deleteBtn.style.display = "none";
-            
+
             document.querySelector('#recurrence-daily').checked = true;
             weeklyOptions.classList.remove('show');
             monthlyOptions.classList.remove('show');
@@ -1195,7 +1195,7 @@ function deleteAllOccurrences(event, day) {
             recurrenceCountInput.style.display = 'none';
             recurrenceEndDateInput.style.display = 'none';
         }
-        
+
         modal.style.display = "flex";
         input.focus();
         holidayModal.style.display = "none";
@@ -1210,10 +1210,10 @@ function deleteAllOccurrences(event, day) {
             month: 'long',
             year: 'numeric'
         }).replace(/^./, c => c.toUpperCase());
-        
+
         let holidayName = '';
         let holidayType = '';
-        
+
         if (typeof holidayData === 'object') {
             holidayName = holidayData.name;
             holidayType = holidayData.type;
@@ -1221,18 +1221,18 @@ function deleteAllOccurrences(event, day) {
             holidayName = holidayData;
             holidayType = inferHolidayType(holidayName);
         }
-        
-        holidayModalName.innerHTML = `${holidayName} 
+
+        holidayModalName.innerHTML = `${holidayName}
             <span class="holiday-type-badge holiday-type-${holidayType.toLowerCase().replace(/[^a-z]/g, '-')}">
                 ${holidayType}
             </span>`;
-        
+
         holidayModalDate.textContent = formattedDate;
-        
+
         holidayInfo.className = 'holiday-info';
         holidayIcon.className = 'holiday-icon';
         holidayModalName.className = 'holiday-name';
-        
+
         if (holidayType === 'Facultativo') {
             holidayInfo.classList.add('facultative');
             holidayIcon.classList.add('facultative');
@@ -1246,7 +1246,7 @@ function deleteAllOccurrences(event, day) {
             holidayIcon.classList.add('local');
             holidayModalName.classList.add('local');
         }
-        
+
         holidayModal.style.display = "flex";
         modal.style.display = "none";
     }
@@ -1292,18 +1292,18 @@ function deleteAllOccurrences(event, day) {
             showModalMessage("Atenção", "Por favor, digite uma descrição para o compromisso.", 'warning');
             return;
         }
-        
+
         const category = document.querySelector('input[name="category"]:checked').value;
         const eventData = {
             text: input.value.trim(),
             category: category,
             date: selectedDate
         };
-        
+
         if (recurrenceToggle.checked) {
             const recurrenceType = document.querySelector('input[name="recurrence-type"]:checked').value;
             const endCondition = recurrenceEndSelect.value;
-            
+
             const recurringEvent = {
                 text: input.value.trim(),
                 category: category,
@@ -1311,7 +1311,7 @@ function deleteAllOccurrences(event, day) {
                 type: recurrenceType,
                 endCondition: endCondition
             };
-            
+
             if (recurrenceType === 'weekly') {
                 const selectedDays = [];
                 document.querySelectorAll('#weekly-options input[type="checkbox"]:checked').forEach(cb => {
@@ -1321,52 +1321,52 @@ function deleteAllOccurrences(event, day) {
             } else if (recurrenceType === 'monthly') {
                 recurringEvent.monthlyOption = document.getElementById('monthly-option').value;
             }
-            
+
             if (endCondition === 'count') {
                 recurringEvent.occurrenceCount = parseInt(recurrenceCountInput.value) || 10;
             } else if (endCondition === 'date') {
                 recurringEvent.endDate = recurrenceEndDateInput.value;
             }
-            
+
             const recurringId = 'recurring_' + Date.now();
             recurringEvents[recurringId] = recurringEvent;
             localStorage.setItem("recurringEvents", JSON.stringify(recurringEvents));
-            
+
             delete events[selectedDate];
         } else {
             events[selectedDate] = eventData;
             deleteBtn.style.display = "block";
         }
-        
+
         localStorage.setItem("events", JSON.stringify(events));
         closeModal();
     };
 
     deleteBtn.onclick = async () => {
         const shouldDelete = await showConfirmModal(
-            "Excluir Compromisso", 
+            "Excluir Compromisso",
             "Tem certeza que deseja excluir este compromisso?",
             'warning'
         );
-        
+
         if (!shouldDelete) return;
-        
+
         const eventData = events[selectedDate];
-        
+
         if (eventData && eventData.recurringId) {
             const deleteChoice = await showConfirmModal(
                 "Evento Recorrente",
                 "Este é um evento recorrente. Deseja excluir apenas este evento ou toda a série?\n\nClique em SIM para excluir toda a série.\nClique em NÃO para excluir apenas este evento.",
                 'warning'
             );
-            
+
             if (deleteChoice) {
                 const confirmSeries = await showConfirmModal(
                     "Confirmar Exclusão",
                     "Tem certeza que deseja excluir TODA a série de eventos recorrentes?\nEsta ação não pode ser desfeita.",
                     'error'
                 );
-                
+
                 if (confirmSeries) {
                     delete recurringEvents[eventData.recurringId];
                     localStorage.setItem("recurringEvents", JSON.stringify(recurringEvents));
@@ -1383,7 +1383,7 @@ function deleteAllOccurrences(event, day) {
             delete events[selectedDate];
             localStorage.setItem("events", JSON.stringify(events));
         }
-        
+
         closeModal();
     };
 
@@ -1408,19 +1408,19 @@ function deleteAllOccurrences(event, day) {
         theme = theme === "light" ? "dark" : "light";
         document.documentElement.setAttribute("data-theme", theme);
         localStorage.setItem("theme", theme);
-        
-        themeToggle.innerHTML = theme === "dark" 
-            ? '<i class="fas fa-sun"></i> Tema Claro' 
+
+        themeToggle.innerHTML = theme === "dark"
+            ? '<i class="fas fa-sun"></i> Tema Claro'
             : '<i class="fas fa-moon"></i> Tema Escuro';
     };
 
     eventListToggle.onclick = () => {
         const eventListSection = document.querySelector('.event-list-section');
         eventListVisible = !eventListVisible;
-        
+
         if (window.innerWidth <= 767) {
             eventListSection.style.display = eventListVisible ? 'block' : 'none';
-            
+
             if (eventListVisible) {
                 eventListToggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
                 eventListToggle.classList.add('active');
@@ -1448,35 +1448,41 @@ function deleteAllOccurrences(event, day) {
         updateNextHoliday();
     };
 
-refreshHolidaysBtn.onclick = () => {
-    const year = currentDate.getFullYear();
-    fetchHolidays(year).then(() => {
-        updateFooterStats();
-    });
-};
+    refreshHolidaysBtn.onclick = () => {
+        const year = currentDate.getFullYear();
+        fetchHolidays(year).then(() => {
+            updateFooterStats();
+        });
+    };
 
-async function limparLocalStorage() {
-    const shouldClear = await showConfirmModal(
-        "Limpar Dados",
-        "Tem certeza que deseja apagar todos os dados salvos?\n\nEsta ação não pode ser desfeita!",
-        'error'
-    );
-    
-    if (!shouldClear) return;
-    
-    toggleSpinner(true, "Limpando dados...");
-    
-    setTimeout(() => {
-        localStorage.clear();
-        events = {};
-        recurringEvents = {};
-        
-        showModalMessage("Sucesso", "Limpo com sucesso!", 'info');
-        renderCalendar(true);
-        
-        updateFooterStats();
-    }, 300);
-}
+    async function limparLocalStorage() {
+        const shouldClear = await showConfirmModal(
+            "Limpar Dados",
+            "Tem certeza que deseja apagar todos os dados salvos?\n\nEsta ação não pode ser desfeita!",
+            'error'
+        );
+
+        if (!shouldClear) return;
+
+        toggleSpinner(true, "Limpando dados...");
+
+        setTimeout(() => {
+            localStorage.clear();
+            events = {};
+            recurringEvents = {};
+
+            showModalMessage("Sucesso", "Limpo com sucesso!", 'info');
+            renderCalendar(true);
+            updateFooterStats();
+            updateClearDataButtonVisibility();
+        }, 300);
+    }
+
+    window.limparLocalStorage = limparLocalStorage;
+
+    if (clearDataBtn) {
+        clearDataBtn.onclick = limparLocalStorage;
+    }
 
     window.onclick = (event) => {
         if (event.target === modal) closeModal();
@@ -1485,311 +1491,270 @@ async function limparLocalStorage() {
         if (event.target === dayModal) dayModal.style.display = "none";
     };
 
-    function initializeCurrentDate() {
-    updateCurrentDate();
-    updateLiveClock();
-    
-    setInterval(() => {
-        updateCurrentDate();
-        updateLiveClock();
-    }, 60000);
-    
-    updateYearProgress();
-}
+    document.addEventListener("DOMContentLoaded", () => {
+        updateAppTitle();
 
-document.addEventListener("DOMContentLoaded", () => {
-    updateAppTitle();
-    
-    function initializeDateTime() {
-        updateCurrentDate();
-        updateLiveClock();
-        updateYearProgress();
-    }
+        function initializeDateTime() {
+            updateCurrentDate();
+            updateLiveClock();
+            updateYearProgress();
+        }
 
-    populateYearSelect();
-    updateSearchFields();
-    
-    initializeDateTime();
-    
-    initTimezoneSelector();
-    
-    fetchHolidays(currentDate.getFullYear());
-    renderCalendar();
-    
-    updateFooter();
-    animateFooterSections();
-    
-    setInterval(updateLiveClock, 1000);
-    
-    setInterval(() => {
-        updateCurrentDate();
-        updateYearProgress();
-    }, 60000);
-    
-    setInterval(updateFooterStats, 60000); 
-    
-    
-    if (headerHelpBtn) {
-        headerHelpBtn.addEventListener('click', openHowToUseModal);
-    }
-    
-    if (headerContactBtn) {
-        headerContactBtn.addEventListener('click', openContactModal);
-    }
-    
-    const footerHelpLinks = document.querySelectorAll('.footer-links a');
-    const footerContactLinks = document.querySelectorAll('.footer-links a');
-    
-    footerHelpLinks.forEach(link => {
-        const linkText = link.textContent || link.innerText || '';
-        const hasQuestionIcon = link.querySelector('.fa-question-circle');
-        
-        if (linkText.includes('Como Usar') || linkText.includes('como usar') || hasQuestionIcon) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                openHowToUseModal();
-            });
-        }
-    });
-    
-    footerContactLinks.forEach(link => {
-        const linkText = link.textContent || link.innerText || '';
-        const hasEnvelopeIcon = link.querySelector('.fa-envelope');
-        
-        if (linkText.includes('Contato') || linkText.includes('contato') || hasEnvelopeIcon) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                openContactModal();
-            });
-        }
-    });
-    
-    if (howToUseClose) {
-        howToUseClose.addEventListener('click', () => {
-            howToUseModal.style.display = 'none';
-        });
-    }
-    
-    if (howToUseUnderstood) {
-        howToUseUnderstood.addEventListener('click', () => {
-            howToUseModal.style.display = 'none';
-        });
-    }
-    
-    if (contactClose) {
-        contactClose.addEventListener('click', () => {
-            contactModal.style.display = 'none';
-        });
-    }
-    
-    if (contactUnderstood) {
-        contactUnderstood.addEventListener('click', () => {
-            contactModal.style.display = 'none';
-        });
-    }
-    
-    window.addEventListener('click', (event) => {
-        if (event.target === howToUseModal) {
-            howToUseModal.style.display = 'none';
-        }
-        if (event.target === contactModal) {
-            contactModal.style.display = 'none';
-        }
-        if (event.target === modal) closeModal();
-        if (event.target === holidayModal) holidayModal.style.display = "none";
-        if (event.target === confirmModal) confirmModal.style.display = "none";
-        if (event.target === dayModal) dayModal.style.display = "none";
-    });
-    
-    setupHowToUseTabs();
-    
-    if (document.getElementById('random-tip')) {
-        updateRandomTip();
-        
+        populateYearSelect();
+        updateSearchFields();
+
+        initializeDateTime();
+
+        initTimezoneSelector();
+
+        fetchHolidays(currentDate.getFullYear());
+        renderCalendar();
+
+        updateFooter();
+        animateFooterSections();
+        updateClearDataButtonVisibility();
+
+        setInterval(updateLiveClock, 1000);
+
         setInterval(() => {
-            if (howToUseModal.style.display === 'flex') {
-                updateRandomTip();
-            }
-        }, 5000);
-    }
-    
-    const contactInfo = {
-        email: "matheus.abib.ma@gmail.com",
-        phone: "+55 (11) 975072008",
-        github: "github.com/MatheusAbib",
-        linkedin: "linkedin.com/in/MatheusAbib"
-    };
-    
-    document.getElementById('contact-email').textContent = contactInfo.email;
-    document.getElementById('contact-phone').textContent = contactInfo.phone;
-    document.getElementById('contact-github').textContent = contactInfo.github;
-    document.getElementById('contact-linkedin').textContent = contactInfo.linkedin;
-    
-    document.querySelectorAll('.copy-btn').forEach(btn => {
-        if (btn.getAttribute('data-text') === "seu.email@exemplo.com") {
-            btn.setAttribute('data-text', contactInfo.email);
-        }
-        if (btn.getAttribute('data-text') === "+5511999999999") {
-            btn.setAttribute('data-text', contactInfo.phone.replace(/\D/g, ''));
-        }
-    });
-    
-    setupCopyButtons();
-    
-    setupFAQAccordion();
-    
-    if (window.innerWidth <= 767) {
-        const eventListSection = document.querySelector('.event-list-section');
-        const mobileToggle = document.getElementById('mobile-event-toggle');
-        
-        eventListSection.style.display = 'block';
-        
-        if (mobileToggle) {
-            mobileToggle.onclick = () => {
-                const content = document.querySelectorAll('.event-list-header, #event-list');
-                const isVisible = content[0].style.display !== 'none';
-                
-                content.forEach(el => {
-                    el.style.display = isVisible ? 'none' : 'block';
-                });
-                
-                if (isVisible) {
-                    mobileToggle.innerHTML = '<i class="fas fa-eye"></i>';
-                } else {
-                    mobileToggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
-                }
-            };
-        }
-        
-        const mainToggleBtn = document.getElementById('event-list-toggle');
-        if (mainToggleBtn) {
-            mainToggleBtn.style.display = 'none';
-        }
-        
-        const headerHelpBtn = document.getElementById('header-help-btn');
-        const headerContactBtn = document.getElementById('header-contact-btn');
-        
-        if (headerHelpBtn && window.innerWidth <= 480) {
-            const spanHelp = headerHelpBtn.querySelector('span');
-            if (spanHelp) spanHelp.style.display = 'none';
-        }
-        
-        if (headerContactBtn && window.innerWidth <= 480) {
-            const spanContact = headerContactBtn.querySelector('span');
-            if (spanContact) spanContact.style.display = 'none';
-        }
-    }
-    
-    const seasonToggle = document.getElementById('season-toggle');
-    seasonToggle.innerHTML = showSeasons 
-        ? '<i class="fas fa-leaf"></i> Ocultar Estações' 
-        : '<i class="fas fa-leaf"></i> Estações';
-        
-    if (showSeasons) {
-        seasonToggle.classList.add('active');
-    }
+            updateCurrentDate();
+            updateYearProgress();
+        }, 60000);
 
-    seasonToggle.addEventListener('click', () => {
-        showSeasons = !showSeasons;
-        localStorage.setItem("showSeasons", showSeasons);
-        
-        seasonToggle.innerHTML = showSeasons 
-            ? '<i class="fas fa-leaf"></i> Ocultar Estações' 
+        setInterval(updateFooterStats, 60000);
+
+        if (headerHelpBtn) {
+            headerHelpBtn.addEventListener('click', openHowToUseModal);
+        }
+
+        const footerHelpLinks = document.querySelectorAll('.footer-links a');
+
+        footerHelpLinks.forEach(link => {
+            const linkText = link.textContent || link.innerText || '';
+            const hasQuestionIcon = link.querySelector('.fa-question-circle');
+
+            if (linkText.includes('Como Usar') || linkText.includes('como usar') || hasQuestionIcon) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openHowToUseModal();
+                });
+            }
+
+            if (linkText.includes('Contato') || linkText.includes('contato') || link.querySelector('.fa-envelope')) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openContactModal();
+                });
+            }
+        });
+
+        if (howToUseClose) {
+            howToUseClose.addEventListener('click', () => {
+                howToUseModal.style.display = 'none';
+            });
+        }
+
+        if (contactClose) {
+            contactClose.addEventListener('click', () => {
+                contactModal.style.display = 'none';
+            });
+        }
+
+        window.addEventListener('click', (event) => {
+            if (event.target === howToUseModal) {
+                howToUseModal.style.display = 'none';
+            }
+            if (event.target === contactModal) {
+                contactModal.style.display = 'none';
+            }
+            if (event.target === modal) closeModal();
+            if (event.target === holidayModal) holidayModal.style.display = "none";
+            if (event.target === confirmModal) confirmModal.style.display = "none";
+            if (event.target === dayModal) dayModal.style.display = "none";
+        });
+
+        setupHowToUseTabs();
+
+        if (document.getElementById('random-tip')) {
+            updateRandomTip();
+
+            setInterval(() => {
+                if (howToUseModal.style.display === 'flex') {
+                    updateRandomTip();
+                }
+            }, 5000);
+        }
+
+        const contactInfo = {
+            email: "matheus.abib.ma@gmail.com",
+            phone: "+55 (11) 975072008",
+            github: "github.com/MatheusAbib",
+            linkedin: "linkedin.com/in/MatheusAbib"
+        };
+
+        document.getElementById('contact-email').textContent = contactInfo.email;
+        document.getElementById('contact-phone').textContent = contactInfo.phone;
+        document.getElementById('contact-github').textContent = contactInfo.github;
+        document.getElementById('contact-linkedin').textContent = contactInfo.linkedin;
+
+        document.querySelectorAll('.copy-btn[data-text="matheus.abib.ma@gmail.com"]').forEach(btn => {
+            btn.setAttribute('data-text', contactInfo.email);
+        });
+
+        document.querySelectorAll('.copy-btn[data-text="+5511975072008"]').forEach(btn => {
+            btn.setAttribute('data-text', contactInfo.phone.replace(/\D/g, ''));
+        });
+
+        document.querySelectorAll('a[href="https://github.com/MatheusAbib"]').forEach(link => {
+            link.href = `https://${contactInfo.github}`;
+        });
+
+        document.querySelectorAll('a[href="https://www.linkedin.com/in/matheusabib/"]').forEach(link => {
+            link.href = `https://${contactInfo.linkedin}`;
+        });
+
+        setupCopyButtons();
+        setupFAQAccordion();
+
+        if (window.innerWidth <= 767) {
+            const eventListSection = document.querySelector('.event-list-section');
+            const mobileToggle = document.getElementById('mobile-event-toggle');
+
+            eventListSection.style.display = 'block';
+
+            if (mobileToggle) {
+                mobileToggle.onclick = () => {
+                    const content = document.querySelectorAll('.event-list-header, #event-list');
+                    const isVisible = content[0].style.display !== 'none';
+
+                    content.forEach(el => {
+                        el.style.display = isVisible ? 'none' : 'block';
+                    });
+
+                    if (isVisible) {
+                        mobileToggle.innerHTML = '<i class="fas fa-eye"></i>';
+                    } else {
+                        mobileToggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                    }
+                };
+            }
+
+            if (headerHelpBtn && window.innerWidth <= 480) {
+                const spanHelp = headerHelpBtn.querySelector('span');
+                if (spanHelp) spanHelp.style.display = 'none';
+            }
+        }
+
+        const seasonToggle = document.getElementById('season-toggle');
+        seasonToggle.innerHTML = showSeasons
+            ? '<i class="fas fa-leaf"></i> Ocultar Estações'
             : '<i class="fas fa-leaf"></i> Estações';
-        
+
         if (showSeasons) {
             seasonToggle.classList.add('active');
-        } else {
-            seasonToggle.classList.remove('active');
-            removeSeasonIndicators();
-            const seasonLegend = document.querySelector('.season-legend');
-            if (seasonLegend) {
-                seasonLegend.classList.remove('show');
+        }
+
+        seasonToggle.addEventListener('click', () => {
+            showSeasons = !showSeasons;
+            localStorage.setItem("showSeasons", showSeasons);
+
+            seasonToggle.innerHTML = showSeasons
+                ? '<i class="fas fa-leaf"></i> Ocultar Estações'
+                : '<i class="fas fa-leaf"></i> Estações';
+
+            if (showSeasons) {
+                seasonToggle.classList.add('active');
+            } else {
+                seasonToggle.classList.remove('active');
+                removeSeasonIndicators();
+                const seasonLegend = document.querySelector('.season-legend');
+                if (seasonLegend) {
+                    seasonLegend.classList.remove('show');
+                }
             }
-        }
-        
-        renderCalendar(true);
-    });
 
-    searchGoBtn.addEventListener('click', goToSearchedMonth);
+            renderCalendar(true);
+        });
 
-    searchMonthSelect.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            goToSearchedMonth();
-        }
-    });
+        searchGoBtn.addEventListener('click', goToSearchedMonth);
 
-    searchYearSelect.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            goToSearchedMonth();
-        }
-    });
+        searchMonthSelect.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                goToSearchedMonth();
+            }
+        });
 
-    prevBtn.addEventListener('click', () => {
-        setTimeout(updateSearchFields, 100);
-    });
+        searchYearSelect.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                goToSearchedMonth();
+            }
+        });
 
-    nextBtn.addEventListener('click', () => {
-        setTimeout(updateSearchFields, 100);
-    });
+        prevBtn.addEventListener('click', () => {
+            setTimeout(updateSearchFields, 100);
+        });
 
-    todayBtn.addEventListener('click', () => {
-        setTimeout(updateSearchFields, 100);
-    });
-    
-    setTimeout(() => {
-        if (currentDateDisplay && currentDateDisplay.textContent === 'Carregando...') {
-            const now = new Date();
-            const options = { 
-                weekday: 'long', 
-                day: 'numeric', 
-                month: 'long',
-                timeZone: selectedTimezone || 'America/Sao_Paulo'
-            };
-            
-            try {
-                const formattedDate = now.toLocaleDateString('pt-BR', options);
-                currentDateDisplay.textContent = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
-            } catch (error) {
-                const optionsFallback = { 
-                    weekday: 'long', 
-                    day: 'numeric', 
-                    month: 'long'
+        nextBtn.addEventListener('click', () => {
+            setTimeout(updateSearchFields, 100);
+        });
+
+        todayBtn.addEventListener('click', () => {
+            setTimeout(updateSearchFields, 100);
+        });
+
+        setTimeout(() => {
+            if (currentDateDisplay && currentDateDisplay.textContent === 'Carregando...') {
+                const now = new Date();
+                const options = {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    timeZone: selectedTimezone || 'America/Sao_Paulo'
                 };
-                const formattedDate = now.toLocaleDateString('pt-BR', optionsFallback);
-                currentDateDisplay.textContent = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+
+                try {
+                    const formattedDate = now.toLocaleDateString('pt-BR', options);
+                    currentDateDisplay.textContent = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+                } catch (error) {
+                    const optionsFallback = {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long'
+                    };
+                    const formattedDate = now.toLocaleDateString('pt-BR', optionsFallback);
+                    currentDateDisplay.textContent = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+                }
             }
-        }
-        
-        if (document.getElementById('current-time-display') && 
-            document.getElementById('current-time-display').textContent === '--:--:--') {
-            const now = new Date();
-            const timeZone = selectedTimezone || 'America/Sao_Paulo';
-            
-            try {
-                const cardTimeString = now.toLocaleTimeString('pt-BR', {
-                    timeZone: timeZone,
-                    hour12: false,
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                document.getElementById('current-time-display').textContent = cardTimeString;
-            } catch (error) {
-                document.getElementById('current-time-display').textContent = 
-                    now.toLocaleTimeString('pt-BR', {hour12: false, hour: '2-digit', minute: '2-digit'});
+
+            if (document.getElementById('current-time-display') &&
+                document.getElementById('current-time-display').textContent === '--:--:--') {
+                const now = new Date();
+                const timeZone = selectedTimezone || 'America/Sao_Paulo';
+
+                try {
+                    const cardTimeString = now.toLocaleTimeString('pt-BR', {
+                        timeZone: timeZone,
+                        hour12: false,
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    document.getElementById('current-time-display').textContent = cardTimeString;
+                } catch (error) {
+                    document.getElementById('current-time-display').textContent =
+                        now.toLocaleTimeString('pt-BR', {hour12: false, hour: '2-digit', minute: '2-digit'});
+                }
             }
-        }
-    }, 2000);
-});
+        }, 2000);
+    });
 
     function showModalMessage(title, message, type = 'info') {
         confirmTitle.innerHTML = `<i class="fas ${type === 'warning' ? 'fa-exclamation-triangle' : type === 'error' ? 'fa-times-circle' : 'fa-info-circle'}"></i> ${title}`;
         confirmMessage.textContent = message;
         confirmYesBtn.textContent = "OK";
         confirmNoBtn.style.display = "none";
-        
+
         confirmModal.style.display = "flex";
-        
+
         return new Promise((resolve) => {
             confirmYesBtn.onclick = () => {
                 confirmModal.style.display = "none";
@@ -1805,15 +1770,15 @@ document.addEventListener("DOMContentLoaded", () => {
         confirmMessage.textContent = message;
         confirmYesBtn.textContent = "Sim";
         confirmNoBtn.style.display = "block";
-        
+
         confirmModal.style.display = "flex";
-        
+
         return new Promise((resolve) => {
             confirmYesBtn.onclick = () => {
                 confirmModal.style.display = "none";
                 resolve(true);
             };
-            
+
             confirmNoBtn.onclick = () => {
                 confirmModal.style.display = "none";
                 resolve(false);
@@ -1836,36 +1801,36 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-function updateYearProgress() {
-    const now = new Date();
-    const year = now.getFullYear();
-    
-    const yearStart = new Date(year, 0, 1);
-    const yearEnd = new Date(year, 11, 31);
-    
-    const yearLength = yearEnd.getTime() - yearStart.getTime();
-    const timePassed = now.getTime() - yearStart.getTime();
-    
-    const percentage = (timePassed / yearLength) * 100;
-    const formattedPercentage = percentage.toFixed(1);
-    
-    const daysPassed = Math.floor(timePassed / (1000 * 60 * 60 * 24)) + 1;
-    const totalDays = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0) ? 366 : 365;
-    
-    document.getElementById('year-progress-display').textContent = `${formattedPercentage}%`;
-    document.getElementById('year-progress-days').textContent = `${daysPassed} de ${totalDays} dias`;
-    
-    const progressBar = document.getElementById('year-progress-bar');
-    if (progressBar) {
-        progressBar.style.width = `${percentage}%`;
+    function updateYearProgress() {
+        const now = new Date();
+        const year = now.getFullYear();
+
+        const yearStart = new Date(year, 0, 1);
+        const yearEnd = new Date(year, 11, 31);
+
+        const yearLength = yearEnd.getTime() - yearStart.getTime();
+        const timePassed = now.getTime() - yearStart.getTime();
+
+        const percentage = (timePassed / yearLength) * 100;
+        const formattedPercentage = percentage.toFixed(1);
+
+        const daysPassed = Math.floor(timePassed / (1000 * 60 * 60 * 24)) + 1;
+        const totalDays = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0) ? 366 : 365;
+
+        document.getElementById('year-progress-display').textContent = `${formattedPercentage}%`;
+        document.getElementById('year-progress-days').textContent = `${daysPassed} de ${totalDays} dias`;
+
+        const progressBar = document.getElementById('year-progress-bar');
+        if (progressBar) {
+            progressBar.style.width = `${percentage}%`;
+        }
+
+        return {
+            percentage: parseFloat(formattedPercentage),
+            daysPassed: daysPassed,
+            totalDays: totalDays
+        };
     }
-    
-    return {
-        percentage: parseFloat(formattedPercentage),
-        daysPassed: daysPassed,
-        totalDays: totalDays
-    };
-}
 
     const consultantDateInput = document.getElementById('consultant-date');
     const consultantCheckBtn = document.getElementById('consultant-check');
@@ -1887,7 +1852,7 @@ function updateYearProgress() {
 
     function getWeekdayName(date) {
         const weekdays = [
-            'Domingo', 'Segunda-feira', 'Terça-feira', 
+            'Domingo', 'Segunda-feira', 'Terça-feira',
             'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'
         ];
         return weekdays[date.getDay()];
@@ -1897,10 +1862,10 @@ function updateYearProgress() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         targetDate.setHours(0, 0, 0, 0);
-        
+
         const diffTime = targetDate.getTime() - today.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
+
         return diffDays;
     }
 
@@ -1910,7 +1875,7 @@ function updateYearProgress() {
         const shortDate = formatShortDate(date);
         const daysUntil = getDaysUntil(new Date(date));
         const season = getSeasonForDate(date);
-        
+
         let daysText = '';
         if (daysUntil === 0) {
             daysText = '<strong>É hoje!</strong>';
@@ -1920,7 +1885,7 @@ function updateYearProgress() {
             const daysAgo = Math.abs(daysUntil);
             daysText = `<strong>${daysAgo} dia${daysAgo !== 1 ? 's' : ''} atrás</strong>`;
         }
-        
+
         consultantResult.innerHTML = `
             <div class="result-content">
                 <div class="result-date">${shortDate}</div>
@@ -1935,18 +1900,18 @@ function updateYearProgress() {
                 </div>
             </div>
         `;
-        
+
         consultantResult.classList.add('active');
     }
 
     consultantCheckBtn.addEventListener('click', () => {
         const dateValue = consultantDateInput.value;
-        
+
         if (!dateValue) {
             showModalMessage("Atenção", "Por favor, selecione uma data.", 'warning');
             return;
         }
-        
+
         const date = new Date(dateValue + 'T00:00:00');
         showConsultantResult(date);
     });
@@ -1962,14 +1927,14 @@ function updateYearProgress() {
             const daysToAdd = parseInt(btn.dataset.days);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            
+
             const targetDate = new Date(today);
             targetDate.setDate(today.getDate() + daysToAdd);
-            
+
             const year = targetDate.getFullYear();
             const month = String(targetDate.getMonth() + 1).padStart(2, '0');
             const day = String(targetDate.getDate()).padStart(2, '0');
-            
+
             consultantDateInput.value = `${year}-${month}-${day}`;
             showConsultantResult(targetDate);
         });
@@ -1980,7 +1945,7 @@ function updateYearProgress() {
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, '0');
         const day = String(today.getDate()).padStart(2, '0');
-        
+
         consultantDateInput.value = `${year}-${month}-${day}`;
         showConsultantResult(today);
     });
@@ -1988,7 +1953,7 @@ function updateYearProgress() {
     function getSeasonForDate(date) {
         const month = date.getMonth() + 1;
         const day = date.getDate();
-        
+
         if ((month === 9 && day >= 23) || month === 10 || month === 11 || (month === 12 && day <= 20)) {
             return {
                 name: 'Primavera',
@@ -2022,35 +1987,35 @@ function updateYearProgress() {
 
     function addSeasonIndicator(dateEl, date) {
         const season = getSeasonForDate(date);
-        
+
         const dayNumber = dateEl.querySelector('.day-number');
         if (!dayNumber) return season;
-        
+
         dayNumber.classList.add('with-season');
-        
+
         const day = date.getDate();
         dayNumber.setAttribute('data-day', day);
-        
+
         const existingIndicator = dayNumber.querySelector('.season-indicator');
         if (existingIndicator) {
             existingIndicator.remove();
         }
-        
+
         const seasonIndicator = document.createElement('span');
         seasonIndicator.className = `season-indicator season-${season.type}`;
         seasonIndicator.title = season.name;
-        
+
         const icon = document.createElement('i');
         icon.className = season.icon;
         seasonIndicator.appendChild(icon);
-        
+
         const tooltip = document.createElement('div');
         tooltip.className = 'season-tooltip';
         tooltip.textContent = season.name;
         seasonIndicator.appendChild(tooltip);
-        
+
         dayNumber.appendChild(seasonIndicator);
-        
+
         return season;
     }
 
@@ -2059,7 +2024,7 @@ function updateYearProgress() {
         dayNumbers.forEach(dayNumber => {
             dayNumber.classList.remove('with-season');
             dayNumber.removeAttribute('data-day');
-            
+
             const seasonIndicator = dayNumber.querySelector('.season-indicator');
             if (seasonIndicator) {
                 seasonIndicator.remove();
@@ -2070,7 +2035,7 @@ function updateYearProgress() {
     function addSeasonLegend() {
         const calendarContainer = document.querySelector('.calendar-container');
         let legend = document.querySelector('.season-legend');
-        
+
         if (!legend) {
             legend = document.createElement('div');
             legend.className = 'season-legend';
@@ -2092,7 +2057,7 @@ function updateYearProgress() {
                     <span>Inverno</span>
                 </div>
             `;
-            
+
             const indicatorsLegend = document.querySelector('.indicators-legend');
             if (indicatorsLegend) {
                 calendarContainer.insertBefore(legend, indicatorsLegend);
@@ -2100,895 +2065,594 @@ function updateYearProgress() {
                 calendarContainer.appendChild(legend);
             }
         }
-        
+
         return legend;
     }
 
-let selectedTimezone = localStorage.getItem('timezone') || 'America/Sao_Paulo';
+    function initTimezoneSelector() {
+        const timezoneSelect = document.getElementById('timezone-select');
+        if (!timezoneSelect) return;
 
-function initTimezoneSelector() {
-    const timezoneSelect = document.getElementById('timezone-select');
-    if (!timezoneSelect) return;
-    
-    timezoneSelect.value = selectedTimezone;
-    
-    timezoneSelect.addEventListener('change', function() {
-        selectedTimezone = this.value;
-        localStorage.setItem('timezone', selectedTimezone);
-        updateLiveClock();
-    });
-}
+        timezoneSelect.value = selectedTimezone;
 
-function updateLiveClock() {
-    try {
-        const clockElement = document.getElementById('live-clock');
-        const dateElement = document.getElementById('live-date');
-        const currentTimeElement = document.getElementById('current-time-display');
-        
-        if (!clockElement || !dateElement) return;
-        
-        const now = new Date();
-        const timeZone = selectedTimezone || 'America/Sao_Paulo';
-        
-        const timeString = now.toLocaleTimeString('pt-BR', {
-            timeZone: timeZone,
-            hour12: false,
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
+        timezoneSelect.addEventListener('change', function() {
+            selectedTimezone = this.value;
+            localStorage.setItem('timezone', selectedTimezone);
+            updateLiveClock();
         });
-        
-        const dateString = now.toLocaleDateString('pt-BR', {
-            timeZone: timeZone,
-            weekday: 'short',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        }).replace(/\./g, '');
-        
-        const formattedDate = dateString.charAt(0).toUpperCase() + dateString.slice(1);
-        const timezoneName = getTimezoneDisplayName(timeZone);
-        
-        clockElement.textContent = timeString;
-        dateElement.textContent = `${formattedDate} | ${timezoneName}`;
-        
-        if (currentTimeElement) {
-            const cardTimeString = now.toLocaleTimeString('pt-BR', {
+    }
+
+    function updateLiveClock() {
+        try {
+            const clockElement = document.getElementById('live-clock');
+            const dateElement = document.getElementById('live-date');
+            const currentTimeElement = document.getElementById('current-time-display');
+
+            if (!clockElement || !dateElement) return;
+
+            const now = new Date();
+            const timeZone = selectedTimezone || 'America/Sao_Paulo';
+
+            const timeString = now.toLocaleTimeString('pt-BR', {
                 timeZone: timeZone,
                 hour12: false,
                 hour: '2-digit',
-                minute: '2-digit'
+                minute: '2-digit',
+                second: '2-digit'
             });
-            currentTimeElement.textContent = cardTimeString;
-        }
-        
-        updateCurrentDate();
-        
-    } catch (error) {
-        console.error('Erro ao atualizar relógio:', error);
-        const now = new Date();
-        if (clockElement) {
-            clockElement.textContent = now.toLocaleTimeString('pt-BR', {hour12: false});
-        }
-        if (dateElement) {
-            dateElement.textContent = now.toLocaleDateString('pt-BR');
-        }
-        if (currentDateDisplay) {
-            const options = { weekday: 'long', day: 'numeric', month: 'long' };
-            const formattedDate = now.toLocaleDateString('pt-BR', options);
-            currentDateDisplay.textContent = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
-        }
-    }
-}
 
-function getTimezoneDisplayName(timeZone) {
-    const timezoneNames = {
-        'America/Sao_Paulo': 'BRT (Brasília)',
-        'America/Manaus': 'AMT (Manaus)',
-        'America/Rio_Branco': 'ACT (Acre)',
-        'America/Bahia': 'BRT (Bahia)',
-        'America/Fortaleza': 'BRT (Fortaleza)',
-        'America/Recife': 'BRT (Recife)',
-        'America/Belem': 'BRT (Belém)',
-        'America/Cuiaba': 'AMT (Cuiabá)',
-        'America/Campo_Grande': 'AMT (Campo Grande)',
-        'America/Porto_Velho': 'AMT (Porto Velho)',
-        'America/Boa_Vista': 'AMT (Boa Vista)',
-        'America/Santarem': 'BRT (Santarém)',
-        'America/Araguaina': 'BRT (Araguaína)',
-        'America/Maceio': 'BRT (Maceió)',
-        'America/Eirunepe': 'ACT (Eirunepé)'
-    };
-    
-    return timezoneNames[timeZone] || timeZone;
-}
+            const dateString = now.toLocaleDateString('pt-BR', {
+                timeZone: timeZone,
+                weekday: 'short',
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            }).replace(/\./g, '');
 
-function createClockElements() {
-    const appTitle = document.getElementById('app-title');
-    if (!appTitle) return;
-    
-    if (document.getElementById('live-clock-container')) return;
-    
-    const clockHTML = `
-        <div id="live-clock-container">
-            <div id="live-clock" class="live-clock">--:--:--</div>
-            <div id="live-date" class="live-date">Carregando...</div>
-        </div>
-    `;
-    
-    appTitle.insertAdjacentHTML('afterend', clockHTML);
-}
+            const formattedDate = dateString.charAt(0).toUpperCase() + dateString.slice(1);
+            const timezoneName = getTimezoneDisplayName(timeZone);
 
-function populateYearSelect() {
-    const currentYear = new Date().getFullYear();
-    const startYear = currentYear - 10;
-    const endYear = currentYear + 10;
-    
-    searchYearSelect.innerHTML = '<option value="">Ano</option>';
-    
-    for (let year = startYear; year <= endYear; year++) {
-        const option = document.createElement('option');
-        option.value = year;
-        option.textContent = year;
-        searchYearSelect.appendChild(option);
-    }
-    
-    searchYearSelect.value = currentYear;
-}
+            clockElement.textContent = timeString;
+            dateElement.textContent = `${formattedDate} | ${timezoneName}`;
 
-function updateSearchFields() {
-    searchMonthSelect.value = currentDate.getMonth();
-    searchYearSelect.value = currentDate.getFullYear();
-}
-
-function goToSearchedMonth() {
-    const selectedMonth = searchMonthSelect.value;
-    const selectedYear = searchYearSelect.value;
-    
-    if (selectedMonth === "" || selectedYear === "") {
-        showModalMessage("Campos obrigatórios", "Por favor, selecione um mês e um ano.", 'warning');
-        return;
-    }
-    
-    currentDate = new Date(selectedYear, selectedMonth, 1);
-    
-    toggleSpinner(true, "Indo para " + getMonthName(selectedMonth) + " de " + selectedYear);
-    
-    setTimeout(() => {
-        renderCalendar();
-        updateSearchFields(); 
-        toggleSpinner(false);
-        
-        
-    }, 500);
-}
-
-function getMonthName(monthIndex) {
-    const months = [
-        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-    ];
-    return months[monthIndex] || '';
-}
-
-function handleSearchKeyPress(e) {
-    if (e.key === 'Enter') {
-        goToSearchedMonth();
-    }
-}
-
-function setupSearchAutoComplete() {
-    searchYearSelect.addEventListener('change', function() {
-        if (searchMonthSelect.value === "" && this.value !== "") {
-            const currentMonth = new Date().getMonth();
-            searchMonthSelect.value = currentMonth;
-        }
-    });
-    
-    searchMonthSelect.addEventListener('change', function() {
-        if (searchYearSelect.value === "" && this.value !== "") {
-            const currentYear = new Date().getFullYear();
-            searchYearSelect.value = currentYear;
-        }
-    });
-}
-
-searchGoBtn.addEventListener('click', goToSearchedMonth);
-searchMonthSelect.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        goToSearchedMonth();
-    }
-});
-searchYearSelect.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        goToSearchedMonth();
-    }
-});
-
-function openDayModal(dateKey, day) {
-    selectedDate = dateKey; 
-    const [year, month] = dateKey.split("-");
-    const date = new Date(year, month - 1, day);
-    
-    const formattedDate = date.toLocaleDateString("pt-BR", {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    }).replace(/^./, c => c.toUpperCase());
-    
-    dayModalTitle.textContent = formattedDate;
-    
-    dayEventsContainer.innerHTML = '';
-    
-    const dayEvents = [];
-    const holidayKey = `${day}-${month}`;
-    
-    if (dynamicHolidays[holidayKey]) {
-        let holidayData = dynamicHolidays[holidayKey];
-        let holidayName = '';
-        let holidayType = '';
-        
-        if (typeof holidayData === 'object') {
-            holidayName = holidayData.name;
-            holidayType = holidayData.type;
-        } else {
-            holidayName = holidayData;
-            holidayType = inferHolidayType(holidayName);
-        }
-        
-        const typeClass = holidayType === 'Facultativo' ? 'facultative' :
-                         holidayType === 'Feriado Religioso' ? 'religious' :
-                         holidayType === 'Feriado Estadual/Municipal' ? 'local' : 'holiday';
-        
-        dayEvents.push({
-            type: typeClass,
-            name: holidayName,
-            eventType: holidayType,
-            isHoliday: true,
-            isRecurring: false,
-            dateKey: dateKey
-        });
-    }
-    
-    if (events[dateKey]) {
-        const eventData = events[dateKey];
-        
-        if (!eventData.excludedFromRecurring && !eventData.isFromRecurring) {
-            dayEvents.push({
-                type: eventData.category || 'personal',
-                name: eventData.text,
-                eventType: getEventTypeName(eventData.category || 'personal'),
-                isHoliday: false,
-                isRecurring: false,
-                dateKey: dateKey,
-                originalId: null
-            });
-        }
-    }
-    
-    const recurringEventsForDate = generateRecurringEventsForDate(date);
-    
-    if (recurringEventsForDate.length > 0) {
-        recurringEventsForDate.forEach(recurringEvent => {
-            const isExcluded = recurringEvent.excludedDates && 
-                              recurringEvent.excludedDates.includes(dateKey);
-            
-            if (!isExcluded) {
-                const isAlreadyAdded = dayEvents.some(event => 
-                    !event.isHoliday && 
-                    event.name === recurringEvent.text && 
-                    event.type === recurringEvent.category
-                );
-                
-                if (!isAlreadyAdded) {
-                    dayEvents.push({
-                        type: recurringEvent.category || 'personal',
-                        name: recurringEvent.text,
-                        eventType: getEventTypeName(recurringEvent.category || 'personal'),
-                        isHoliday: false,
-                        isRecurring: true,
-                        originalId: recurringEvent.originalId,
-                        dateKey: dateKey
-                    });
-                }
+            if (currentTimeElement) {
+                const cardTimeString = now.toLocaleTimeString('pt-BR', {
+                    timeZone: timeZone,
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                currentTimeElement.textContent = cardTimeString;
             }
-        });
+
+            updateCurrentDate();
+
+        } catch (error) {
+            console.error('Erro ao atualizar relógio:', error);
+            const now = new Date();
+            if (clockElement) {
+                clockElement.textContent = now.toLocaleTimeString('pt-BR', {hour12: false});
+            }
+            if (dateElement) {
+                dateElement.textContent = now.toLocaleDateString('pt-BR');
+            }
+            if (currentDateDisplay) {
+                const options = { weekday: 'long', day: 'numeric', month: 'long' };
+                const formattedDate = now.toLocaleDateString('pt-BR', options);
+                currentDateDisplay.textContent = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+            }
+        }
     }
-    
-    Object.keys(events).forEach(key => {
-        if (key === dateKey) {
-            const eventData = events[key];
-            
-            if (eventData.isFromRecurring || eventData.originalRecurringId) {
+
+    function getTimezoneDisplayName(timeZone) {
+        const timezoneNames = {
+            'America/Sao_Paulo': 'BRT (Brasília)',
+            'America/Manaus': 'AMT (Manaus)',
+            'America/Rio_Branco': 'ACT (Acre)',
+            'America/Bahia': 'BRT (Bahia)',
+            'America/Fortaleza': 'BRT (Fortaleza)',
+            'America/Recife': 'BRT (Recife)',
+            'America/Belem': 'BRT (Belém)',
+            'America/Cuiaba': 'AMT (Cuiabá)',
+            'America/Campo_Grande': 'AMT (Campo Grande)',
+            'America/Porto_Velho': 'AMT (Porto Velho)',
+            'America/Boa_Vista': 'AMT (Boa Vista)',
+            'America/Santarem': 'BRT (Santarém)',
+            'America/Araguaina': 'BRT (Araguaína)',
+            'America/Maceio': 'BRT (Maceió)',
+            'America/Eirunepe': 'ACT (Eirunepé)'
+        };
+
+        return timezoneNames[timeZone] || timeZone;
+    }
+
+    function populateYearSelect() {
+        const currentYear = new Date().getFullYear();
+        const startYear = currentYear - 10;
+        const endYear = currentYear + 10;
+
+        searchYearSelect.innerHTML = '<option value="">Ano</option>';
+
+        for (let year = startYear; year <= endYear; year++) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            searchYearSelect.appendChild(option);
+        }
+
+        searchYearSelect.value = currentYear;
+    }
+
+    function updateSearchFields() {
+        searchMonthSelect.value = currentDate.getMonth();
+        searchYearSelect.value = currentDate.getFullYear();
+    }
+
+    function goToSearchedMonth() {
+        const selectedMonth = searchMonthSelect.value;
+        const selectedYear = searchYearSelect.value;
+
+        if (selectedMonth === "" || selectedYear === "") {
+            showModalMessage("Campos obrigatórios", "Por favor, selecione um mês e um ano.", 'warning');
+            return;
+        }
+
+        currentDate = new Date(selectedYear, selectedMonth, 1);
+
+        toggleSpinner(true, "Indo para " + getMonthName(selectedMonth) + " de " + selectedYear);
+
+        setTimeout(() => {
+            renderCalendar();
+            updateSearchFields();
+            toggleSpinner(false);
+        }, 500);
+    }
+
+    function getMonthName(monthIndex) {
+        const months = [
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+        ];
+        return months[monthIndex] || '';
+    }
+
+    function openDayModal(dateKey, day) {
+        selectedDate = dateKey;
+        const [year, month] = dateKey.split("-");
+        const date = new Date(year, month - 1, day);
+
+        const formattedDate = date.toLocaleDateString("pt-BR", {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }).replace(/^./, c => c.toUpperCase());
+
+        dayModalTitle.textContent = formattedDate;
+
+        dayEventsContainer.innerHTML = '';
+
+        const dayEvents = [];
+        const holidayKey = `${day}-${month}`;
+
+        if (dynamicHolidays[holidayKey]) {
+            let holidayData = dynamicHolidays[holidayKey];
+            let holidayName = '';
+            let holidayType = '';
+
+            if (typeof holidayData === 'object') {
+                holidayName = holidayData.name;
+                holidayType = holidayData.type;
+            } else {
+                holidayName = holidayData;
+                holidayType = inferHolidayType(holidayName);
+            }
+
+            const typeClass = holidayType === 'Facultativo' ? 'facultative' :
+                             holidayType === 'Feriado Religioso' ? 'religious' :
+                             holidayType === 'Feriado Estadual/Municipal' ? 'local' : 'holiday';
+
+            dayEvents.push({
+                type: typeClass,
+                name: holidayName,
+                eventType: holidayType,
+                isHoliday: true,
+                isRecurring: false,
+                dateKey: dateKey
+            });
+        }
+
+        if (events[dateKey]) {
+            const eventData = events[dateKey];
+
+            if (!eventData.excludedFromRecurring && !eventData.isFromRecurring) {
                 dayEvents.push({
                     type: eventData.category || 'personal',
                     name: eventData.text,
                     eventType: getEventTypeName(eventData.category || 'personal'),
                     isHoliday: false,
-                    isRecurring: false, 
-                    wasRecurring: true, 
-                    originalId: eventData.originalRecurringId,
-                    dateKey: dateKey
+                    isRecurring: false,
+                    dateKey: dateKey,
+                    originalId: null
                 });
             }
         }
-    });
-    
-    dayEvents.sort((a, b) => {
-        if (a.isHoliday && !b.isHoliday) return -1;
-        if (!a.isHoliday && b.isHoliday) return 1;
-        
-        if (a.isRecurring && !b.isRecurring) return -1;
-        if (!a.isRecurring && b.isRecurring) return 1;
-        
-        return 0;
-    });
-    
-    if (dayEvents.length === 0) {
-        dayEventsContainer.innerHTML = `
-            <div class="empty-day-events" style="text-align: center; padding: 40px 20px;">
-                <i class="far fa-calendar-times" style="font-size: 3rem; color: var(--text-light); opacity: 0.5; margin-bottom: 16px;"></i>
-                <p style="color: var(--text-light);">Nenhum evento neste dia</p>
-                <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 8px;">Clique em "Adicionar Compromisso" para criar um novo</p>
-            </div>
-        `;
-    } else {
-        dayEvents.forEach(event => {
-            const eventItem = document.createElement('div');
-            eventItem.className = `day-event-item ${event.type}-item`;
-            
-            let iconClass = '';
-            let icon = '';
-            
-            if (event.isHoliday) {
-                iconClass = event.type;
-                icon = event.type === 'facultative' ? 'fas fa-building' :
-                       event.type === 'religious' ? 'fas fa-church' :
-                       event.type === 'local' ? 'fas fa-landmark' : 'fas fa-flag';
-            } else {
-                iconClass = event.type;
-                icon = event.type === 'work' ? 'fas fa-briefcase' :
-                       event.type === 'health' ? 'fas fa-heartbeat' :
-                       event.type === 'leisure' ? 'fas fa-gamepad' : 'fas fa-check';
+
+        const recurringEventsForDate = generateRecurringEventsForDate(date);
+
+        if (recurringEventsForDate.length > 0) {
+            recurringEventsForDate.forEach(recurringEvent => {
+                const isExcluded = recurringEvent.excludedDates &&
+                                  recurringEvent.excludedDates.includes(dateKey);
+
+                if (!isExcluded) {
+                    const isAlreadyAdded = dayEvents.some(event =>
+                        !event.isHoliday &&
+                        event.name === recurringEvent.text &&
+                        event.type === recurringEvent.category
+                    );
+
+                    if (!isAlreadyAdded) {
+                        dayEvents.push({
+                            type: recurringEvent.category || 'personal',
+                            name: recurringEvent.text,
+                            eventType: getEventTypeName(recurringEvent.category || 'personal'),
+                            isHoliday: false,
+                            isRecurring: true,
+                            originalId: recurringEvent.originalId,
+                            dateKey: dateKey
+                        });
+                    }
+                }
+            });
+        }
+
+        Object.keys(events).forEach(key => {
+            if (key === dateKey) {
+                const eventData = events[key];
+
+                if (eventData.isFromRecurring || eventData.originalRecurringId) {
+                    dayEvents.push({
+                        type: eventData.category || 'personal',
+                        name: eventData.text,
+                        eventType: getEventTypeName(eventData.category || 'personal'),
+                        isHoliday: false,
+                        isRecurring: false,
+                        wasRecurring: true,
+                        originalId: eventData.originalRecurringId,
+                        dateKey: dateKey
+                    });
+                }
             }
-            
-            eventItem.innerHTML = `
-                <div class="day-event-header">
-                    <div class="day-event-icon ${iconClass}">
-                        <i class="${icon}"></i>
-                    </div>
-                    <div class="day-event-info">
-                        <div class="day-event-name">${event.name}</div>
-                        <div>
-                            <span class="day-event-type ${event.type}">${event.eventType}</span>
-                            ${event.isRecurring ? 
-                                '<span class="day-event-recurring"><i class="fas fa-redo"></i> Recorrente</span>' : 
-                                ''}
-                            ${event.wasRecurring ? 
-                                '<span class="day-event-recurring" style="background: var(--accent-light);"><i class="fas fa-edit"></i> Editado Separadamente</span>' : 
-                                ''}
-                        </div>
-                    </div>
+        });
+
+        dayEvents.sort((a, b) => {
+            if (a.isHoliday && !b.isHoliday) return -1;
+            if (!a.isHoliday && b.isHoliday) return 1;
+
+            if (a.isRecurring && !b.isRecurring) return -1;
+            if (!a.isRecurring && b.isRecurring) return 1;
+
+            return 0;
+        });
+
+        if (dayEvents.length === 0) {
+            dayEventsContainer.innerHTML = `
+                <div class="empty-day-events" style="text-align: center; padding: 40px 20px;">
+                    <i class="far fa-calendar-times" style="font-size: 3rem; color: var(--text-light); opacity: 0.5; margin-bottom: 16px;"></i>
+                    <p style="color: var(--text-light);">Nenhum evento neste dia</p>
+                    <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 8px;">Clique em "Adicionar Compromisso" para criar um novo</p>
                 </div>
             `;
-            
-            eventItem.onclick = (e) => {
-                e.stopPropagation();
-                dayModal.style.display = 'none';
-                
+        } else {
+            dayEvents.forEach(event => {
+                const eventItem = document.createElement('div');
+                eventItem.className = `day-event-item ${event.type}-item`;
+
+                let iconClass = '';
+                let icon = '';
+
                 if (event.isHoliday) {
-                    const holidayKey = `${day}-${month}`;
-                    let holidayData = dynamicHolidays[holidayKey];
-                    
-                    if (typeof holidayData === 'string') {
-                        holidayData = {
-                            name: holidayData,
-                            type: inferHolidayType(holidayData)
-                        };
+                    iconClass = event.type;
+                    icon = event.type === 'facultative' ? 'fas fa-building' :
+                           event.type === 'religious' ? 'fas fa-church' :
+                           event.type === 'local' ? 'fas fa-landmark' : 'fas fa-flag';
+                } else {
+                    iconClass = event.type;
+                    icon = event.type === 'work' ? 'fas fa-briefcase' :
+                           event.type === 'health' ? 'fas fa-heartbeat' :
+                           event.type === 'leisure' ? 'fas fa-gamepad' : 'fas fa-check';
+                }
+
+                eventItem.innerHTML = `
+                    <div class="day-event-header">
+                        <div class="day-event-icon ${iconClass}">
+                            <i class="${icon}"></i>
+                        </div>
+                        <div class="day-event-info">
+                            <div class="day-event-name">${event.name}</div>
+                            <div>
+                                <span class="day-event-type ${event.type}">${event.eventType}</span>
+                                ${event.isRecurring ?
+                                    '<span class="day-event-recurring"><i class="fas fa-redo"></i> Recorrente</span>' :
+                                    ''}
+                                ${event.wasRecurring ?
+                                    '<span class="day-event-recurring" style="background: var(--accent-light);"><i class="fas fa-edit"></i> Editado Separadamente</span>' :
+                                    ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                eventItem.onclick = (e) => {
+                    e.stopPropagation();
+                    dayModal.style.display = 'none';
+
+                    if (event.isHoliday) {
+                        const hKey = `${day}-${month}`;
+                        let holidayData = dynamicHolidays[hKey];
+
+                        if (typeof holidayData === 'string') {
+                            holidayData = {
+                                name: holidayData,
+                                type: inferHolidayType(holidayData)
+                            };
+                        }
+
+                        openHolidayModal(dateKey, day, holidayData);
+                    } else if (event.isRecurring) {
+                        openRecurringEventModal(dateKey, day, {
+                            text: event.name,
+                            category: event.type,
+                            originalId: event.originalId,
+                            dateKey: dateKey,
+                            isRecurring: true
+                        });
+                    } else {
+                        openModal(dateKey, day);
                     }
-                    
-                    openHolidayModal(dateKey, day, holidayData);
-                } else if (event.isRecurring) {
-                    openRecurringEventModal(dateKey, day, {
-                        text: event.name,
-                        category: event.type,
-                        originalId: event.originalId,
-                        dateKey: dateKey,
-                        isRecurring: true
+                };
+
+                dayEventsContainer.appendChild(eventItem);
+            });
+        }
+
+        const hasHolidays = dayEvents.some(e => e.isHoliday);
+        const hasRecurringEvents = dayEvents.some(e => e.isRecurring);
+
+        if (hasHolidays) {
+            dayModalNote.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                <span>Feriados não podem ser editados ou excluídos. Clique em um evento para mais opções.</span>
+            `;
+        } else if (hasRecurringEvents) {
+            dayModalNote.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                <span>Eventos recorrentes têm opções especiais. Clique em um evento para ver as opções disponíveis.</span>
+            `;
+        } else {
+            dayModalNote.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                <span>Clique em um evento para editá-lo ou excluí-lo.</span>
+            `;
+        }
+
+        dayModalAddEvent.onclick = () => {
+            dayModal.style.display = 'none';
+            openModal(dateKey, day);
+        };
+
+        dayModalClose.onclick = () => {
+            dayModal.style.display = 'none';
+        };
+
+        dayModal.style.display = 'flex';
+        modal.style.display = 'none';
+        holidayModal.style.display = 'none';
+    }
+
+    function getEventTypeName(type) {
+        const typeNames = {
+            'personal': 'Pessoal',
+            'work': 'Trabalho',
+            'health': 'Saúde',
+            'leisure': 'Lazer',
+            'holiday': 'Feriado Nacional',
+            'facultative': 'Ponto Facultativo',
+            'religious': 'Feriado Religioso',
+            'local': 'Feriado Local'
+        };
+        return typeNames[type] || type;
+    }
+
+    function updateFooter() {
+        const currentYear = new Date().getFullYear();
+        document.getElementById('footer-year').textContent = currentYear;
+        document.getElementById('current-footer-year').textContent = currentYear;
+
+        updateFooterStats();
+        animateFooterSections();
+    }
+
+    function updateFooterStats() {
+        let totalEvents = Object.keys(events).length;
+
+        Object.keys(recurringEvents).forEach(id => {
+            const recurringEvent = recurringEvents[id];
+            if (recurringEvent.endCondition === 'count') {
+                totalEvents += recurringEvent.occurrenceCount || 1;
+            } else {
+                totalEvents += 12;
+            }
+        });
+
+        let totalHolidays = 0;
+
+        Object.keys(dynamicHolidays).forEach(() => {
+            totalHolidays++;
+        });
+
+        const footerTotalEvents = document.getElementById('footer-total-events');
+        const footerTotalHolidays = document.getElementById('footer-total-holidays');
+
+        if (footerTotalEvents) {
+            footerTotalEvents.textContent = totalEvents;
+
+            footerTotalEvents.style.transform = 'scale(1.2)';
+            footerTotalEvents.style.color = 'var(--accent-light)';
+
+            setTimeout(() => {
+                footerTotalEvents.style.transform = 'scale(1)';
+                footerTotalEvents.style.color = '';
+            }, 300);
+        }
+
+        if (footerTotalHolidays) {
+            footerTotalHolidays.textContent = totalHolidays;
+
+            footerTotalHolidays.style.transform = 'scale(1.2)';
+            footerTotalHolidays.style.color = 'var(--accent-light)';
+
+            setTimeout(() => {
+                footerTotalHolidays.style.transform = 'scale(1)';
+                footerTotalHolidays.style.color = '';
+            }, 300);
+        }
+
+        updateClearDataButtonVisibility();
+    }
+
+    function animateFooterSections() {
+        const footerSections = document.querySelectorAll('.footer-section');
+
+        footerSections.forEach((section, index) => {
+            section.style.animationDelay = `${index * 0.1}s`;
+        });
+    }
+
+    function openHowToUseModal() {
+        howToUseModal.style.display = 'flex';
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+
+        document.querySelector('[data-tab="basics"]').classList.add('active');
+        document.getElementById('tab-basics').classList.add('active');
+
+        setupFAQAccordion();
+        updateRandomTip();
+    }
+
+    function openContactModal() {
+        contactModal.style.display = 'flex';
+        setupCopyButtons();
+    }
+
+    function setupFAQAccordion() {
+        const faqItems = document.querySelectorAll('.faq-item');
+
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+
+            question.addEventListener('click', () => {
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== item && otherItem.classList.contains('active')) {
+                        otherItem.classList.remove('active');
+                    }
+                });
+
+                item.classList.toggle('active');
+            });
+        });
+    }
+
+    function setupCopyButtons() {
+        const copyButtons = document.querySelectorAll('.copy-btn');
+
+        copyButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const textToCopy = this.getAttribute('data-text');
+
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        showCopyFeedback(this);
+                    }).catch(() => {
+                        fallbackCopy(textToCopy, this);
                     });
                 } else {
-                    openModal(dateKey, day);
-                }
-            };
-            
-            dayEventsContainer.appendChild(eventItem);
-        });
-    }
-    
-    const hasHolidays = dayEvents.some(e => e.isHoliday);
-    const hasRecurringEvents = dayEvents.some(e => e.isRecurring);
-    
-    if (hasHolidays) {
-        dayModalNote.innerHTML = `
-            <i class="fas fa-info-circle"></i>
-            <span>Feriados não podem ser editados ou excluídos. Clique em um evento para mais opções.</span>
-        `;
-    } else if (hasRecurringEvents) {
-        dayModalNote.innerHTML = `
-            <i class="fas fa-info-circle"></i>
-            <span>Eventos recorrentes têm opções especiais. Clique em um evento para ver as opções disponíveis.</span>
-        `;
-    } else {
-        dayModalNote.innerHTML = `
-            <i class="fas fa-info-circle"></i>
-            <span>Clique em um evento para editá-lo ou excluí-lo.</span>
-        `;
-    }
-    
-    dayModalAddEvent.onclick = () => {
-        dayModal.style.display = 'none';
-        openModal(dateKey, day);
-    };
-    
-    dayModalClose.onclick = () => {
-        dayModal.style.display = 'none';
-    };
-    
-    dayModal.style.display = 'flex';
-    modal.style.display = 'none';
-    holidayModal.style.display = 'none';
-}
-
-function getEventTypeName(type) {
-    const typeNames = {
-        'personal': 'Pessoal',
-        'work': 'Trabalho',
-        'health': 'Saúde',
-        'leisure': 'Lazer',
-        'holiday': 'Feriado Nacional',
-        'facultative': 'Ponto Facultativo',
-        'religious': 'Feriado Religioso',
-        'local': 'Feriado Local'
-    };
-    return typeNames[type] || type;
-}
-
-if (dayModalClose) {
-    dayModalClose.onclick = () => {
-        dayModal.style.display = 'none';
-    };
-}
-
-if (dayModalAddEvent) {
-    dayModalAddEvent.onclick = () => {
-        if (selectedDate) {
-            const [year, month, day] = selectedDate.split("-").map(Number);
-            dayModal.style.display = 'none';
-            openModal(selectedDate, day);
-        }
-    };
-}
-
-
-function updateFooter() {
-    const currentYear = new Date().getFullYear();
-    document.getElementById('footer-year').textContent = currentYear;
-    document.getElementById('current-footer-year').textContent = currentYear;
-    
-    updateFooterStats();
-    
-    initParticleAnimations();
-    
-    setupBackToTopButton();
-}
-
-function updateFooterStats() {
-    let totalEvents = Object.keys(events).length;
-    
-    Object.keys(recurringEvents).forEach(id => {
-        const recurringEvent = recurringEvents[id];
-        if (recurringEvent.endCondition === 'count') {
-            totalEvents += recurringEvent.occurrenceCount || 1;
-        } else {
-            totalEvents += 12; 
-        }
-    });
-    
-    let totalHolidays = 0;
-    const currentYear = new Date().getFullYear();
-    
-    Object.keys(dynamicHolidays).forEach(key => {
-        totalHolidays++;
-    });
-    
-    const footerTotalEvents = document.getElementById('footer-total-events');
-    const footerTotalHolidays = document.getElementById('footer-total-holidays');
-    
-    if (footerTotalEvents) {
-        footerTotalEvents.textContent = totalEvents;
-        
-        footerTotalEvents.style.transform = 'scale(1.2)';
-        footerTotalEvents.style.color = 'var(--accent-light)';
-        
-        setTimeout(() => {
-            footerTotalEvents.style.transform = 'scale(1)';
-            footerTotalEvents.style.color = '';
-        }, 300);
-    }
-    
-    if (footerTotalHolidays) {
-        footerTotalHolidays.textContent = totalHolidays;
-        
-        footerTotalHolidays.style.transform = 'scale(1.2)';
-        footerTotalHolidays.style.color = 'var(--accent-light)';
-        
-        setTimeout(() => {
-            footerTotalHolidays.style.transform = 'scale(1)';
-            footerTotalHolidays.style.color = '';
-        }, 300);
-    }
-}
-
-function initParticleAnimations() {
-    const particles = document.querySelectorAll('.particle');
-    
-    particles.forEach((particle, index) => {
-        const randomDelay = Math.random() * 5;
-        const randomDuration = 15 + Math.random() * 10;
-        
-        particle.style.animationDelay = `-${randomDelay}s`;
-        particle.style.animationDuration = `${randomDuration}s`;
-    });
-}
-
-function setupBackToTopButton() {
-    const backToTopBtn = document.getElementById('back-to-top');
-    
-    if (!backToTopBtn) return;
-    
-    window.addEventListener('scroll', () => {
-        if (window.pageYOffset > 300) {
-            backToTopBtn.style.opacity = '1';
-            backToTopBtn.style.visibility = 'visible';
-            backToTopBtn.style.transform = 'translateY(0)';
-        } else {
-            backToTopBtn.style.opacity = '0';
-            backToTopBtn.style.visibility = 'hidden';
-            backToTopBtn.style.transform = 'translateY(10px)';
-        }
-    });
-    
-    backToTopBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-        
-        backToTopBtn.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            backToTopBtn.style.transform = '';
-        }, 200);
-    });
-    
-    backToTopBtn.addEventListener('mouseenter', () => {
-        backToTopBtn.style.transform = 'translateY(-3px)';
-    });
-    
-    backToTopBtn.addEventListener('mouseleave', () => {
-        if (window.pageYOffset > 300) {
-            backToTopBtn.style.transform = 'translateY(0)';
-        }
-    });
-}
-
-function animateFooterSections() {
-    const footerSections = document.querySelectorAll('.footer-section');
-    
-    footerSections.forEach((section, index) => {
-        section.style.animationDelay = `${index * 0.1}s`;
-    });
-}
-
-function updateStatsOnChange() {
-    updateFooterStats();
-}
-
-const originalSaveFunction = saveBtn.onclick;
-saveBtn.onclick = function() {
-    if (originalSaveFunction) originalSaveFunction();
-    setTimeout(updateStatsOnChange, 100);
-};
-
-const originalDeleteFunction = deleteBtn.onclick;
-deleteBtn.onclick = function() {
-    if (originalDeleteFunction) originalDeleteFunction();
-    setTimeout(updateStatsOnChange, 100);
-};
-
-
-function openHowToUseModal() {
-    howToUseModal.style.display = 'flex';
-    
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    document.querySelector('[data-tab="basics"]').classList.add('active');
-    document.getElementById('tab-basics').classList.add('active');
-    
-    setupFAQAccordion();
-    
-    updateRandomTip();
-}
-
-function openContactModal() {
-    contactModal.style.display = 'flex';
-    
-    setupCopyButtons();
-}
-
-function setupFAQAccordion() {
-    const faqItems = document.querySelectorAll('.faq-item');
-    
-    faqItems.forEach(item => {
-        const question = item.querySelector('.faq-question');
-        
-        question.addEventListener('click', () => {
-            faqItems.forEach(otherItem => {
-                if (otherItem !== item && otherItem.classList.contains('active')) {
-                    otherItem.classList.remove('active');
-                }
-            });
-            
-            item.classList.toggle('active');
-        });
-    });
-}
-
-function setupCopyButtons() {
-    const copyButtons = document.querySelectorAll('.copy-btn');
-    
-    copyButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const textToCopy = this.getAttribute('data-text');
-            
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    showCopyFeedback(this);
-                }).catch(err => {
                     fallbackCopy(textToCopy, this);
+                }
+            });
+        });
+    }
+
+    function showCopyFeedback(button) {
+        const originalText = button.innerHTML;
+        const originalClass = button.className;
+
+        button.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+        button.className = originalClass + ' copied';
+
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.className = originalClass;
+        }, 2000);
+    }
+
+    function fallbackCopy(text, button) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+
+        try {
+            document.execCommand('copy');
+            showCopyFeedback(button);
+        } catch (err) {
+            alert('Não foi possível copiar o texto. Por favor, copie manualmente.');
+        }
+
+        document.body.removeChild(textArea);
+    }
+
+    const tips = [
+        "Clique duas vezes em um dia para criar rapidamente um evento pessoal.",
+        "Arraste o mouse sobre os indicadores para ver detalhes dos eventos.",
+        "Use Ctrl + clique para selecionar múltiplos dias (em desenvolvimento).",
+        "Os eventos recorrentes podem ser configurados para terminar em uma data específica.",
+        "Você pode alterar o fuso horário no cabeçalho para sua região.",
+        "Use o consultor de datas para planejar eventos futuros.",
+        "Os feriados locais são carregados junto com os nacionais.",
+        "A barra de progresso do ano é atualizada em tempo real.",
+        "Você pode alternar entre temas claro e escuro a qualquer momento.",
+        "Em dispositivos móveis, o menu lateral pode ser ocultado para mais espaço."
+    ];
+
+    function updateRandomTip() {
+        const randomTip = tips[Math.floor(Math.random() * tips.length)];
+        document.getElementById('random-tip').textContent = randomTip;
+    }
+
+    function setupHowToUseTabs() {
+        const tabButtons = document.querySelectorAll('.tab-btn');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
                 });
-            } else {
-                fallbackCopy(textToCopy, this);
-            }
-        });
-    });
-}
 
-function showCopyFeedback(button) {
-    const originalText = button.innerHTML;
-    const originalClass = button.className;
-    
-    button.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-    button.className = originalClass + ' copied';
-    
-    setTimeout(() => {
-        button.innerHTML = originalText;
-        button.className = originalClass;
-    }, 2000);
-}
-
-function fallbackCopy(text, button) {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    document.body.appendChild(textArea);
-    textArea.select();
-    
-    try {
-        document.execCommand('copy');
-        showCopyFeedback(button);
-    } catch (err) {
-        alert('Não foi possível copiar o texto. Por favor, copie manualmente.');
-    }
-    
-    document.body.removeChild(textArea);
-}
-
-const tips = [
-    "Clique duas vezes em um dia para criar rapidamente um evento pessoal.",
-    "Arraste o mouse sobre os indicadores para ver detalhes dos eventos.",
-    "Use Ctrl + clique para selecionar múltiplos dias (em desenvolvimento).",
-    "Os eventos recorrentes podem ser configurados para terminar em uma data específica.",
-    "Você pode alterar o fuso horário no cabeçalho para sua região.",
-    "Use o consultor de datas para planejar eventos futuros.",
-    "Os feriados locais são carregados junto com os nacionais.",
-    "A barra de progresso do ano é atualizada em tempo real.",
-    "Você pode alternar entre temas claro e escuro a qualquer momento.",
-    "Em dispositivos móveis, o menu lateral pode ser ocultado para mais espaço."
-];
-
-function updateRandomTip() {
-    const randomTip = tips[Math.floor(Math.random() * tips.length)];
-    document.getElementById('random-tip').textContent = randomTip;
-}
-
-function setupHowToUseTabs() {
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const tabId = this.getAttribute('data-tab');
-            
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
+                this.classList.add('active');
+                document.getElementById(`tab-${tabId}`).classList.add('active');
             });
-            
-            this.classList.add('active');
-            document.getElementById(`tab-${tabId}`).classList.add('active');
         });
-    });
-}
+    }
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (headerHelpBtn) {
-        headerHelpBtn.addEventListener('click', openHowToUseModal);
-    }
-    
-    if (headerContactBtn) {
-        headerContactBtn.addEventListener('click', openContactModal);
-    }
-    
-    const footerHelpLinks = document.querySelectorAll('a[href*="Como Usar"], a[href*="como-usar"]');
-    const footerContactLinks = document.querySelectorAll('a[href*="Contato"], a[href*="contato"]');
-    
-    footerHelpLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            openHowToUseModal();
-        });
-    });
-    
-    footerContactLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            openContactModal();
-        });
-    });
-    
-    if (howToUseClose) {
-        howToUseClose.addEventListener('click', () => {
-            howToUseModal.style.display = 'none';
-        });
-    }
-    
-    if (howToUseUnderstood) {
-        howToUseUnderstood.addEventListener('click', () => {
-            howToUseModal.style.display = 'none';
-        });
-    }
-    
-    if (contactClose) {
-        contactClose.addEventListener('click', () => {
-            contactModal.style.display = 'none';
-        });
-    }
-    
-    if (contactUnderstood) {
-        contactUnderstood.addEventListener('click', () => {
-            contactModal.style.display = 'none';
-        });
-    }
-    
-    window.addEventListener('click', (event) => {
-        if (event.target === howToUseModal) {
-            howToUseModal.style.display = 'none';
-        }
-        if (event.target === contactModal) {
-            contactModal.style.display = 'none';
-        }
-    });
-    
-    setupHowToUseTabs();
-    
-    if (document.getElementById('random-tip')) {
-        updateRandomTip();
-        
-        setInterval(() => {
-            if (howToUseModal.style.display === 'flex') {
-                updateRandomTip();
-            }
-        }, 5000);
-    }
-    
-    const contactInfo = {
-        email: "matheus.abib.ma@gmail.com",
-        phone: "+55 (11) 975072008",
-        github: "github.com/MatheusAbib",
-        linkedin: "linkedin.com/in/MatheusAbib"
-    };
-    
-    document.getElementById('contact-email').textContent = contactInfo.email;
-    document.getElementById('contact-phone').textContent = contactInfo.phone;
-    document.getElementById('contact-github').textContent = contactInfo.github;
-    document.getElementById('contact-linkedin').textContent = contactInfo.linkedin;
-    
-document.querySelectorAll('.copy-btn[data-text="matheus.abib.ma@gmail.com"]').forEach(btn => {
-            btn.setAttribute('data-text', contactInfo.email);
-    });
-    
-    document.querySelectorAll('.copy-btn[data-text="+5511975072008"]').forEach(btn => {
-        btn.setAttribute('data-text', contactInfo.phone.replace(/\D/g, ''));
-    });
-    
-    document.querySelectorAll('a[href="https://github.com/MatheusAbib"]').forEach(link => {
-        link.href = `https://${contactInfo.github}`;
-    });
-    
-    document.querySelectorAll('a[href="https://www.linkedin.com/in/matheusabib/"]').forEach(link => {
-        link.href = `https://${contactInfo.linkedin}`;
-    });
-});
-
-function setupFooterLinks() {
-    const footerHowToUse = document.getElementById('footer-how-to-use');
-    if (footerHowToUse) {
-        footerHowToUse.addEventListener('click', function(e) {
-            e.preventDefault();
-            openHowToUseModal();
-        });
-    }
-    
-    const footerContact = document.getElementById('footer-contact');
-    if (footerContact) {
-        footerContact.addEventListener('click', function(e) {
-            e.preventDefault();
-            openContactModal();
-        });
-    }
-    
-    const helpLinks = document.querySelectorAll('.footer-links a[href="#"]');
-    helpLinks.forEach(link => {
-        const text = link.textContent || link.innerText;
-        
-        if (text.includes('Como Usar') || text.includes('como usar')) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                openHowToUseModal();
-            });
-        }
-        
-        if (text.includes('Contato') || text.includes('contato')) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                openContactModal();
-            });
-        }
-    });
-}
-
-function openEventFromList(dateKey, day, eventData = null) {
-    if (!eventData && events[dateKey]) {
-        eventData = events[dateKey];
-    }
-    
-    if (eventData && eventData.isRecurring) {
-        openRecurringEventModal(dateKey, day, {
-            text: eventData.text,
-            category: eventData.category,
-            originalId: eventData.originalRecurringId,
-            dateKey: dateKey,
-            isRecurring: true
-        });
-    } else if (eventData) {
-        openModal(dateKey, day);
-    } else {
-        openDayModal(dateKey, day);
-    }
-}
+})();

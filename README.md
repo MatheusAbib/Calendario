@@ -2,6 +2,7 @@
 
 Uma aplicação web completa de calendário com gerenciamento inteligente de compromissos, feriados nacionais e eventos recorrentes. Desenvolvido com foco em experiência do usuário, performance e design moderno.
 
+> 🔗 **Acesse o projeto online:** [matheusabib.github.io/Calendario](https://matheusabib.github.io/Calendario/)
 
 ## ✨ Demonstração
 

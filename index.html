@@ -6,156 +6,150 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image" sizes="16x16" href="assets/calendario.png">
-
     <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
     <div class="container">
-<header class="app-header">
-    <div class="header-content">
-        <div class="header-left">
-            <a href="#" class="app-title clickable" style="text-decoration: none;">
-                <h1>Calendário de <span id="current-year"></span></h1>
-                <div class="header-current-date" id="header-current-date">Carregando...</div>
-            </a>
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <a href="#" class="app-title clickable">
+                        <h1>Calendário <span id="current-year"></span></h1>
+                    </a>
 
-            
-            <div class="clock-container">
-                <div id="live-clock-container">
-                    <div id="live-clock" class="live-clock"></div>
-                    <div id="live-date" class="live-date"></div>
-                    <select id="timezone-select" class="timezone-select">
-                        <option value="America/Sao_Paulo">BRT (Brasília)</option>
-                        <option value="America/Manaus">AMT (Manaus)</option>
-                        <option value="America/Fortaleza">BRT (Fortaleza)</option>
-                        <option value="America/Recife">BRT (Recife)</option>
-                        <option value="America/Bahia">BRT (Bahia)</option>
-                        <option value="America/Belem">BRT (Belém)</option>
-                        <option value="America/Cuiaba">AMT (Cuiabá)</option>
-                        <option value="America/Campo_Grande">AMT (Campo Grande)</option>
-                        <option value="America/Porto_Velho">AMT (Porto Velho)</option>
-                        <option value="America/Rio_Branco">ACT (Acre)</option>
-                        <option value="America/Santarem">BRT (Santarém)</option>
-                        <option value="America/Maceio">BRT (Maceió)</option>
-                    </select>
+                    <div class="clock-container">
+                        <div id="live-clock-container">
+                            <div id="live-clock" class="live-clock"></div>
+                            <div id="live-date" class="live-date"></div>
+                            <select id="timezone-select" class="timezone-select">
+                                <option value="America/Sao_Paulo">BRT (Brasília)</option>
+                                <option value="America/Manaus">AMT (Manaus)</option>
+                                <option value="America/Fortaleza">BRT (Fortaleza)</option>
+                                <option value="America/Recife">BRT (Recife)</option>
+                                <option value="America/Bahia">BRT (Bahia)</option>
+                                <option value="America/Belem">BRT (Belém)</option>
+                                <option value="America/Cuiaba">AMT (Cuiabá)</option>
+                                <option value="America/Campo_Grande">AMT (Campo Grande)</option>
+                                <option value="America/Porto_Velho">AMT (Porto Velho)</option>
+                                <option value="America/Rio_Branco">ACT (Acre)</option>
+                                <option value="America/Santarem">BRT (Santarém)</option>
+                                <option value="America/Maceio">BRT (Maceió)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="header-actions">
+                    <button class="help-btn" id="header-help-btn">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Como Usar</span>
+                    </button>
+
+                    <button id="theme-toggle" class="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="info-cards">
+            <div class="info-card">
+                <div class="info-card-icon">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">HOJE</div>
+                    <div class="info-card-value" id="current-date-display">Carregando...</div>
+                    <div class="info-card-subtitle">
+                        <i class="fas fa-clock"></i>
+                        <span id="current-time-display">--:--:--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card holiday-card">
+                <div class="info-card-icon">
+                    <i class="fas fa-flag"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">PRÓXIMO FERIADO</div>
+                    <div class="info-card-value" id="next-holiday-display">Carregando...</div>
+                    <div class="info-card-subtitle" id="next-holiday-days">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card decorrido-card">
+                <div class="info-card-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="info-card-content">
+                    <div class="info-card-title">ANO DECORRIDO</div>
+                    <div class="info-card-value" id="year-progress-display">Carregando...</div>
+                    <div class="info-card-subtitle" id="year-progress-days">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>-</span>
+                    </div>
+                    <div class="year-progress">
+                        <div class="year-progress-fill" id="year-progress-bar"></div>
+                    </div>
                 </div>
             </div>
         </div>
-        
-<div class="header-actions">
-    <button class="help-btn" id="header-help-btn">
-        <i class="fas fa-question-circle"></i>
-        <span>Como Usar</span>
-    </button>
-    
-    
-    <button id="theme-toggle" class="theme-toggle">
-        <i class="fas fa-moon"></i>
-    </button>
-</div>
-    </div>
-</header>
 
-<div class="info-cards">
-    <div class="info-card">
-        <div class="info-card-icon">
-            <i class="fas fa-calendar-day"></i>
-        </div>
-        <div class="info-card-content">
-            <div class="info-card-title">HOJE</div>
-            <div class="info-card-value" id="current-date-display">Carregando...</div>
-            <div class="info-card-subtitle">
-                <i class="fas fa-clock"></i>
-                <span id="current-time-display">--:--:--</span>
-            </div>
-        </div>
-    </div>
-    
-    <div class="info-card holiday-card">
-        <div class="info-card-icon">
-            <i class="fas fa-flag"></i>
-        </div>
-        <div class="info-card-content">
-            <div class="info-card-title">PRÓXIMO FERIADO</div>
-            <div class="info-card-value" id="next-holiday-display">Carregando...</div>
-            <div class="info-card-subtitle" id="next-holiday-days">
-                <i class="fas fa-calendar-alt"></i>
-                <span>-</span>
-            </div>
-        </div>
-    </div>
-    
-    <div class="info-card">
-        <div class="info-card-icon">
-            <i class="fas fa-chart-line"></i>
-        </div>
-        <div class="info-card-content">
-            <div class="info-card-title">ANO DECORRIDO</div>
-            <div class="info-card-value" id="year-progress-display">Carregando...</div>
-            <div class="info-card-subtitle" id="year-progress-days">
-                <i class="fas fa-calendar-check"></i>
-                <span>-</span>
-            </div>
-            <div class="year-progress">
-                <div class="year-progress-fill" id="year-progress-bar"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="controls">
-    <button id="today-btn" class="today-btn">
-        <i class="fas fa-calendar-day"></i> Hoje
-    </button>
-
-    <button id="season-toggle">
-        <i class="fas fa-leaf"></i> Estações
-    </button>
-    
-    <div class="month-year-search">
-        <div class="search-input-group">
-            <select id="search-month" class="search-select">
-                <option value="">Mês</option>
-                <option value="0">Janeiro</option>
-                <option value="1">Fevereiro</option>
-                <option value="2">Março</option>
-                <option value="3">Abril</option>
-                <option value="4">Maio</option>
-                <option value="5">Junho</option>
-                <option value="6">Julho</option>
-                <option value="7">Agosto</option>
-                <option value="8">Setembro</option>
-                <option value="9">Outubro</option>
-                <option value="10">Novembro</option>
-                <option value="11">Dezembro</option>
-            </select>
-            
-            <select id="search-year" class="search-select">
-                <option value="">Ano</option>
-                <!-- Os anos serão preenchidos via JavaScript -->
-            </select>
-            
-            <button id="search-go" class="search-btn" title="Ir para mês/ano">
-                <i class="fas fa-search"></i>
+        <div class="controls">
+            <button id="today-btn" class="today-btn">
+                <i class="fas fa-calendar-day"></i> Hoje
             </button>
+
+            <button id="season-toggle">
+                <i class="fas fa-leaf"></i> Estações
+            </button>
+
+            <div class="month-year-search">
+                <div class="search-input-group">
+                    <select id="search-month" class="search-select">
+                        <option value="">Mês</option>
+                        <option value="0">Janeiro</option>
+                        <option value="1">Fevereiro</option>
+                        <option value="2">Março</option>
+                        <option value="3">Abril</option>
+                        <option value="4">Maio</option>
+                        <option value="5">Junho</option>
+                        <option value="6">Julho</option>
+                        <option value="7">Agosto</option>
+                        <option value="8">Setembro</option>
+                        <option value="9">Outubro</option>
+                        <option value="10">Novembro</option>
+                        <option value="11">Dezembro</option>
+                    </select>
+
+                    <select id="search-year" class="search-select">
+                        <option value="">Ano</option>
+                    </select>
+
+                    <button id="search-go" class="search-btn" title="Ir para mês/ano">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+        <button id="event-list-toggle">
+            <i class="fas fa-list"></i> Compromissos
+        </button>
+        <button id="refresh-holidays" style="display: none;">
+            <i class="fas fa-sync-alt"></i> Atualizar Feriados
+        </button>
+        <button id="clear-data-btn" style="display: none;">
+            <i class="fas fa-trash-alt"></i> Limpar Dados
+        </button>
         </div>
-    </div>
-    
-    <button id="event-list-toggle">
-        <i class="fas fa-list"></i> Compromissos
-    </button>
-    <button id="refresh-holidays" style="display: none;">
-        <i class="fas fa-sync-alt"></i> Atualizar Feriados
-    </button>
-</div>
 
         <div class="main-content">
             <section class="calendar-section">
                 <div class="calendar-container">
-                    <button onclick="limparLocalStorage()" class="btn-limpar-mobile" title="Limpar dados salvos">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
                     <header class="calendar-header">
                         <button id="prev">
                             <i class="fas fa-chevron-left"></i>
@@ -191,8 +185,8 @@
                             <span>Inverno</span>
                         </div>
                     </div>
-                    
-                   <div class="indicators-legend">
+
+                    <div class="indicators-legend">
                         <div class="legend-item">
                             <div class="legend-dot holiday"></div>
                             <span>Feriado Nacional</span>
@@ -229,38 +223,38 @@
                 </div>
             </section>
 
-         <section class="event-list-section">
-    <div class="event-list-container">
-        <div class="mobile-event-list-header">
-            <h3><i class="fas fa-tasks"></i> Compromissos do Mês</h3>
-            <button id="mobile-event-toggle" class="mobile-toggle-btn">
-                <i class="fas fa-eye-slash"></i>
-            </button>
-        </div>
-        
-        <h3 class="desktop-title"><i class="fas fa-tasks"></i> Compromissos do Mês</h3>
-        
-        <div class="event-list-header">
-            <div class="event-stats">
-                <div class="stat holiday-stat">
-                    <div class="stat-dot" style="background: var(--holiday-color);"></div>
-                    <span id="holiday-count">0</span> Feriados
+            <section class="event-list-section">
+                <div class="event-list-container">
+                    <div class="mobile-event-list-header">
+                        <h3><i class="fas fa-tasks"></i> Compromissos do Mês</h3>
+                        <button id="mobile-event-toggle" class="mobile-toggle-btn">
+                            <i class="fas fa-eye-slash"></i>
+                        </button>
+                    </div>
+
+                    <h3 class="desktop-title"><i class="fas fa-tasks"></i> Compromissos do Mês</h3>
+
+                    <div class="event-list-header">
+                        <div class="event-stats">
+                            <div class="stat holiday-stat">
+                                <div class="stat-dot" style="background: var(--holiday-color);"></div>
+                                <span id="holiday-count">0</span> Feriados
+                            </div>
+                            <div class="stat event-stat">
+                                <div class="stat-dot" style="background: var(--personal-event);"></div>
+                                <span id="event-count">0</span> Compromissos
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="loading" id="holidays-loading">
+                        <div class="loading-spinner"></div>
+                        <p>Carregando feriados...</p>
+                    </div>
+
+                    <ul id="event-list"></ul>
                 </div>
-                <div class="stat event-stat">
-                    <div class="stat-dot" style="background: var(--personal-event);"></div>
-                    <span id="event-count">0</span> Compromissos
-                </div>
-            </div>
-        </div>
-        
-        <div class="loading" id="holidays-loading">
-            <div class="loading-spinner"></div>
-            <p>Carregando feriados...</p>
-        </div>
-        
-        <ul id="event-list"></ul>
-    </div>
-</section>
+            </section>
         </div>
 
         <div class="date-consultant">
@@ -268,7 +262,7 @@
                 <h3><i class="fas fa-calendar-alt"></i> Consultor de Data</h3>
                 <p>Descubra em qual dia da semana cai qualquer data</p>
             </div>
-            
+
             <div class="consultant-content">
                 <div class="input-group">
                     <label for="consultant-date"><i class="far fa-calendar"></i> Digite uma data:</label>
@@ -279,14 +273,14 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="consultant-result" id="consultant-result">
                     <div class="result-placeholder">
                         <i class="far fa-calendar-check"></i>
                         <p>O resultado será exibido aqui</p>
                     </div>
                 </div>
-                
+
                 <div class="quick-dates">
                     <button class="quick-date-btn" data-days="0">Hoje</button>
                     <button class="quick-date-btn" data-days="7">Daqui 1 semana</button>
@@ -300,12 +294,12 @@
     <div class="modal" id="modal">
         <div class="modal-content">
             <h2 id="modal-date"></h2>
-            
+
             <div class="form-group">
                 <label for="event-input">Descrição do compromisso:</label>
                 <input type="text" id="event-input" placeholder="Ex: Reunião com equipe">
             </div>
-            
+
             <div class="form-group">
                 <label>Categoria:</label>
                 <div class="event-category-selector">
@@ -339,12 +333,12 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="checkbox-group">
                 <input type="checkbox" id="recurrence-toggle">
                 <label for="recurrence-toggle">Evento recorrente</label>
             </div>
-            
+
             <div class="recurrence-options" id="recurrence-options">
                 <label>Tipo de recorrência:</label>
                 <div class="recurrence-type-selector">
@@ -365,7 +359,7 @@
                         <label for="recurrence-yearly">Anual</label>
                     </div>
                 </div>
-                
+
                 <div class="weekly-options" id="weekly-options">
                     <label>Repetir nos dias:</label>
                     <div class="days-of-week">
@@ -399,7 +393,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="monthly-options" id="monthly-options">
                     <label>Repetir:</label>
                     <select id="monthly-option">
@@ -407,7 +401,7 @@
                         <option value="same-weekday">No mesmo dia da semana</option>
                     </select>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="recurrence-end">Terminar em:</label>
                     <select id="recurrence-end">
@@ -419,7 +413,7 @@
                     <input type="date" id="recurrence-end-date" style="display: none; margin-top: 8px;">
                 </div>
             </div>
-            
+
             <div class="modal-actions">
                 <button id="save">Salvar</button>
                 <button id="delete">Excluir</button>
@@ -427,10 +421,6 @@
             </div>
         </div>
     </div>
-
-<button onclick="limparLocalStorage()" class="btn-limpar">
-    <i class="fas fa-trash-alt"></i> Limpar Dados Salvos
-</button>
 
     <div class="modal" id="holiday-modal">
         <div class="holiday-modal-content">
@@ -470,461 +460,419 @@
         </div>
     </div>
 
-        <div class="modal" id="day-modal">
-            <div class="day-modal-content">
-                <h2><i class="fas fa-calendar-day"></i> <span id="day-modal-title">Dia</span></h2>
-                
-                <div class="day-events-container" id="day-events-container">
-                </div>
-                
-                <div class="day-modal-note" id="day-modal-note">
-                </div>
-                
-                <div class="modal-actions">
-                    <button id="day-modal-add-event" class="add-event-btn">
-                        <i class="fas fa-plus-circle"></i> Adicionar Compromisso
-                    </button>
-                    <button id="day-modal-close">Fechar</button>
-                </div>
-            </div>
-        </div>
+    <div class="modal" id="day-modal">
+        <div class="day-modal-content">
+            <h2><i class="fas fa-calendar-day"></i> <span id="day-modal-title">Dia</span></h2>
 
-        <!-- Modal Como Usar / FAQ -->
-<div class="modal" id="how-to-use-modal">
-    <div class="how-to-use-modal-content">
-        <div class="modal-header">
-            <h2><i class="fas fa-book-open"></i> Como Usar o Calendário</h2>
-            <button class="modal-close-btn" id="how-to-use-close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="modal-body">
-            <div class="modal-tabs">
-                <button class="tab-btn active" data-tab="basics">Básico</button>
-                <button class="tab-btn" data-tab="events">Eventos</button>
-                <button class="tab-btn" data-tab="holidays">Feriados</button>
-                <button class="tab-btn" data-tab="recurring">Recorrência</button>
-                <button class="tab-btn" data-tab="faq">FAQ</button>
+            <div class="day-events-container" id="day-events-container">
             </div>
-            
-            <div class="tab-content active" id="tab-basics">
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Navegação no Calendário</h3>
-                        <p>Use os botões <i class="fas fa-chevron-left"></i> e <i class="fas fa-chevron-right"></i> para navegar entre os meses. Clique em "Hoje" para voltar ao mês atual.</p>
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Busca Rápida</h3>
-                        <p>Use o seletor de mês/ano no topo para ir diretamente para qualquer mês. Selecione o mês e ano desejados e clique na lupa.</p>
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-eye"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Modo de Visualização</h3>
-                        <p>Clique no botão "Estações" para mostrar/ocultar os ícones das estações do ano nos dias.</p>
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-moon"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Tema Escuro/Claro</h3>
-                        <p>Use o botão no canto superior direito para alternar entre os modos claro e escuro.</p>
-                    </div>
-                </div>
+
+            <div class="day-modal-note" id="day-modal-note">
             </div>
-            
-            <div class="tab-content" id="tab-events">
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-plus-circle"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Criar Eventos</h3>
-                        <p>Clique em qualquer dia para adicionar um compromisso. Você pode categorizar como Pessoal, Trabalho, Saúde ou Lazer.</p>
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-edit"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Editar/Excluir Eventos</h3>
-                        <p>Clique no indicador colorido do evento para editá-lo ou excluí-lo. No modal do dia, clique no evento específico.</p>
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-list"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Lista de Compromissos</h3>
-                        <p>Use o painel lateral para ver todos os compromissos do mês. Em dispositivos móveis, use o botão "Compromissos".</p>
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-palette"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Cores dos Eventos</h3>
-                        <p>Cada categoria tem uma cor específica. Use a legenda no rodapé do calendário para identificar cada tipo.</p>
-                    </div>
-                </div>
+
+            <div class="modal-actions">
+                <button id="day-modal-add-event" class="add-event-btn">
+                    <i class="fas fa-plus-circle"></i> Adicionar Compromisso
+                </button>
+                <button id="day-modal-close">Fechar</button>
             </div>
-            
-            <div class="tab-content" id="tab-holidays">
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-flag"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Feriados Nacionais</h3>
-                        <p>Feriados são carregados automaticamente e mostrados com ícones vermelhos. Não podem ser editados ou excluídos.</p>
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-building"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Pontos Facultativos</h3>
-                        <p>Mostrados em laranja. Consulte sua empresa/órgão sobre a aplicação.</p>
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-church"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Feriados Religiosos</h3>
-                        <p>Mostrados em azul. Podem variar conforme a região.</p>
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-landmark"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Feriados Locais</h3>
-                        <p>Mostrados em roxo. Específicos de estados ou municípios.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="tab-content" id="tab-recurring">
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-redo"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Eventos Recorrentes</h3>
-                        <p>Ao criar um evento, marque "Evento recorrente" para configurar recorrência diária, semanal, mensal ou anual.</p>
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-cog"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Configuração de Recorrência</h3>
-                        <p>Escolha o tipo de recorrência e configure os detalhes. Você pode definir um fim específico ou número de ocorrências.</p>
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-edit"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Gerenciamento de Recorrências</h3>
-                        <p>Clique em um evento recorrente para: editar apenas essa ocorrência, excluir apenas essa ocorrência, ou excluir toda a série.</p>
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <div class="feature-text">
-                        <h3>Exclusões de Série</h3>
-                        <p>Se excluir uma ocorrência específica, ela será removida apenas dessa data, mantendo as demais da série.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="tab-content" id="tab-faq">
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Meus dados são salvos?</h3>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Sim, todos os seus eventos são salvos localmente no seu navegador. Nenhum dado é enviado para servidores externos.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Posso usar em múltiplos dispositivos?</h3>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Os dados são salvos apenas no dispositivo atual. Para sincronização entre dispositivos, você precisaria usar a funcionalidade de exportar/importar (futura implementação).</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Como limpar todos os dados?</h3>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Use o botão "Limpar Dados Salvos" no canto inferior direito (ou superior direito em mobile). Esta ação não pode ser desfeita!</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Os feriados são atualizados automaticamente?</h3>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Sim, os feriados nacionais são carregados automaticamente de uma API pública. Se houver falha na conexão, serão usados feriados fixos.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Posso mudar o fuso horário?</h3>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Sim, use o seletor de fuso horário no cabeçalho para escolher o fuso da sua região. Isso afeta o relógio e a data atual.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>O site funciona offline?</h3>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Sim, após o primeiro carregamento, o site funciona offline. Eventos e configurações são salvos localmente.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="modal-footer">
-            <div class="quick-tips">
-                <h4><i class="fas fa-lightbulb"></i> Dica Rápida</h4>
-                <p id="random-tip">Clique duas vezes em um dia para criar rapidamente um evento pessoal.</p>
-            </div>
-            
-            <button class="modal-close-btn large" id="how-to-use-understood">
-                <i class="fas fa-check"></i> Entendi
-            </button>
         </div>
     </div>
-</div>
 
-<!-- Modal Contato -->
-<div class="modal" id="contact-modal">
-    <div class="contact-modal-content">
-        <div class="modal-header">
-            <h2><i class="fas fa-envelope"></i> Entre em Contato</h2>
-            <button class="modal-close-btn" id="contact-close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="modal-body">
-            <div class="contact-hero">
-                <div class="contact-avatar">
-                    <i class="fas fa-user-circle"></i>
-                </div>
-                <h3>Matheus Abib</h3>
-                <p>Estou sempre aberto a sugestões, feedback e oportunidades de colaboração.</p>
-            </div>
-            
-            <div class="contact-info-grid">
-                <div class="contact-card email">
-                    <div class="contact-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div class="contact-details">
-                        <h4>Email</h4>
-                        <p class="contact-value" id="contact-email">matheus.abib.ma@gmail.com</p>
-                        <button class="copy-btn" data-text="matheus.abib.ma@gmail.com">
-                            <i class="far fa-copy"></i> Copiar
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="contact-card phone">
-                    <div class="contact-icon">
-                        <i class="fas fa-phone"></i>
-                    </div>
-                    <div class="contact-details">
-                        <h4>Telefone/WhatsApp</h4>
-                        <p class="contact-value" id="contact-phone">+55 (11) 975072008</p>
-                        <button class="copy-btn" data-text="+5511975072008">
-                            <i class="far fa-copy"></i> Copiar
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="contact-card github">
-                    <div class="contact-icon">
-                        <i class="fab fa-github"></i>
-                    </div>
-                    <div class="contact-details">
-                        <h4>GitHub</h4>
-                        <p class="contact-value" id="contact-github">github.com/MatheusAbib</p>
-                        <a href="https://github.com/MatheusAbib" target="_blank" class="contact-link">
-                            <i class="fas fa-external-link-alt"></i> Visitar
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="contact-card linkedin">
-                    <div class="contact-icon">
-                        <i class="fab fa-linkedin"></i>
-                    </div>
-                    <div class="contact-details">
-                        <h4>LinkedIn</h4>
-                        <p class="contact-value" id="contact-linkedin">linkedin.com/in/MatheusAbib</p>
-                        <a href="https://linkedin.com/in/MatheusAbib" target="_blank" class="contact-link">
-                            <i class="fas fa-external-link-alt"></i> Visitar
-                        </a>
-                    </div>
-                </div>
+    <div class="modal" id="how-to-use-modal">
+        <div class="how-to-use-modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-book-open"></i> Como Usar o Calendário</h2>
+                <button class="modal-close-btn" id="how-to-use-close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
-        </div>
-        
-        <div class="modal-footer">
-            <button class="modal-close-btn large" id="contact-understood">
-                <i class="fas fa-check"></i> Fechar
-            </button>
-        </div>
-    </div>
-</div>
+            <div class="modal-body">
+                <div class="modal-tabs">
+                    <button class="tab-btn active" data-tab="basics">Básico</button>
+                    <button class="tab-btn" data-tab="events">Eventos</button>
+                    <button class="tab-btn" data-tab="holidays">Feriados</button>
+                    <button class="tab-btn" data-tab="recurring">Recorrência</button>
+                    <button class="tab-btn" data-tab="faq">FAQ</button>
+                </div>
 
+                <div class="tab-content active" id="tab-basics">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Navegação no Calendário</h3>
+                            <p>Use os botões <i class="fas fa-chevron-left"></i> e <i class="fas fa-chevron-right"></i> para navegar entre os meses. Clique em "Hoje" para voltar ao mês atual.</p>
+                        </div>
+                    </div>
 
-        <!-- Footer -->
-<footer class="site-footer">
-    <div class="footer-container">
-        <div class="footer-content">
-            <div class="footer-section">
-                <div class="footer-logo">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Calendário <span id="footer-year"></span></span>
-                </div>
-                <p class="footer-description">
-                    Calendário pessoal inteligente com feriados nacionais, 
-                    estações do ano e gestão de compromissos.
-                </p>
-            </div>
-            
-            <div class="footer-section">
-                <h3 class="footer-title">Recursos</h3>
-                <ul class="footer-links-0">
-                    <li><a><i class="fas fa-flag"></i> Feriados Nacionais</a></li>
-                    <li><a><i class="fas fa-leaf"></i> Estações do Ano</a></li>
-                    <li><a><i class="fas fa-bell"></i> Lembretes</a></li>
-                    <li><a><i class="fas fa-calendar-alt"></i> Consultor de Datas</a></li>
-                </ul>
-            </div>
-            
-            <div class="footer-section">
-                <h3 class="footer-title">Ferramentas</h3>
-                <ul class="footer-links-0">
-                    <li><a><i class="fas fa-plus-circle"></i> Adicionar Eventos</a></li>
-                    <li><a><i class="fas fa-redo"></i> Eventos Recorrentes</a></li>
-                    <li><a><i class="fas fa-search"></i> Buscar Datas</a></li>
-                    <li><a><i class="fas fa-palette"></i> Temas Personalizados</a></li>
-                </ul>
-            </div>
-            
-            <div class="footer-section">
-                <h3 class="footer-title">Ajuda</h3>
-                <ul class="footer-links">
-                    <li><a href="#" id="footer-how-to-use"><i class="fas fa-question-circle"></i> Como Usar</a></li>
-                    <li><a href="#" id="footer-contact"><i class="fas fa-envelope"></i> Contato</a></li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="footer-bottom">
-            <div class="footer-bottom-content">
-                <div class="footer-copyright">
-                    <p>&copy; <span id="current-footer-year"></span> Calendário. <br> Todos os direitos reservados.</p>
-                    <p class="footer-version">Versão 2.0.1</p>
-                </div>
-                
-                <div class="footer-stats">
-                    <div class="stat-item">
-                        <i class="fas fa-calendar-check"></i>
-                        <span><span id="footer-total-events">0</span> Eventos</span>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Busca Rápida</h3>
+                            <p>Use o seletor de mês/ano no topo para ir diretamente para qualquer mês. Selecione o mês e ano desejados e clique na lupa.</p>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <i class="fas fa-flag"></i>
-                        <span><span id="footer-total-holidays">0</span> Feriados</span>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Modo de Visualização</h3>
+                            <p>Clique no botão "Estações" para mostrar/ocultar os ícones das estações do ano nos dias.</p>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <i class="fas fa-user"></i>
-                        <span>Você</span>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-moon"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Tema Escuro/Claro</h3>
+                            <p>Use o botão no canto superior direito para alternar entre os modos claro e escuro.</p>
+                        </div>
                     </div>
                 </div>
+
+                <div class="tab-content" id="tab-events">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Criar Eventos</h3>
+                            <p>Clique em qualquer dia para adicionar um compromisso. Você pode categorizar como Pessoal, Trabalho, Saúde ou Lazer.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Editar/Excluir Eventos</h3>
+                            <p>Clique no indicador colorido do evento para editá-lo ou excluí-lo. No modal do dia, clique no evento específico.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Lista de Compromissos</h3>
+                            <p>Use o painel lateral para ver todos os compromissos do mês. Em dispositivos móveis, use o botão "Compromissos".</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Cores dos Eventos</h3>
+                            <p>Cada categoria tem uma cor específica. Use a legenda no rodapé do calendário para identificar cada tipo.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-holidays">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-flag"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Feriados Nacionais</h3>
+                            <p>Feriados são carregados automaticamente e mostrados com ícones vermelhos. Não podem ser editados ou excluídos.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Pontos Facultativos</h3>
+                            <p>Mostrados em laranja. Consulte sua empresa/órgão sobre a aplicação.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-church"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Feriados Religiosos</h3>
+                            <p>Mostrados em azul. Podem variar conforme a região.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-landmark"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Feriados Locais</h3>
+                            <p>Mostrados em roxo. Específicos de estados ou municípios.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-recurring">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-redo"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Eventos Recorrentes</h3>
+                            <p>Ao criar um evento, marque "Evento recorrente" para configurar recorrência diária, semanal, mensal ou anual.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Configuração de Recorrência</h3>
+                            <p>Escolha o tipo de recorrência e configure os detalhes. Você pode definir um fim específico ou número de ocorrências.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Gerenciamento de Recorrências</h3>
+                            <p>Clique em um evento recorrente para: editar apenas essa ocorrência, excluir apenas essa ocorrência, ou excluir toda a série.</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Exclusões de Série</h3>
+                            <p>Se excluir uma ocorrência específica, ela será removida apenas dessa data, mantendo as demais da série.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-faq">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Meus dados são salvos?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Sim, todos os seus eventos são salvos localmente no seu navegador. Nenhum dado é enviado para servidores externos.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Posso usar em múltiplos dispositivos?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Os dados são salvos apenas no dispositivo atual. Para sincronização entre dispositivos, você precisaria usar a funcionalidade de exportar/importar (futura implementação).</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Como limpar todos os dados?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Use o botão "Limpar Dados Salvos" no canto inferior direito. Esta ação não pode ser desfeita!</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Os feriados são atualizados automaticamente?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Sim, os feriados nacionais são carregados automaticamente de uma API pública. Se houver falha na conexão, serão usados feriados fixos.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Posso mudar o fuso horário?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Sim, use o seletor de fuso horário no cabeçalho para escolher o fuso da sua região. Isso afeta o relógio e a data atual.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>O site funciona offline?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Sim, após o primeiro carregamento, o site funciona offline. Eventos e configurações são salvos localmente.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <div class="footer-credits">
-                <p>
-                    Desenvolvido por</i>
-                    <span class="developer-name"><a href="https://matheus-abib-portfolio.netlify.app/" style="text-decoration: none;" target="_blank">Matheus Abib</a></span>
-                </p>
-                <div class="footer-back-to-top" id="back-to-top">
-                    <i class="fas fa-arrow-up"></i>
-                    Voltar ao Topo
+
+            <div class="modal-footer">
+                <div class="quick-tips">
+                    <h4><i class="fas fa-lightbulb"></i> Dica Rápida</h4>
+                    <p id="random-tip">Clique duas vezes em um dia para criar rapidamente um evento pessoal.</p>
                 </div>
             </div>
         </div>
     </div>
-    
 
-    <!-- Onda decorativa -->
-    <div class="footer-wave">
-        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" class="shape-fill"></path>
-            <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35,6.36,119.13-6.25,33-10.59,65.27-30.15,87.71-54.51,21.13-23,34.18-52.43,41.18-82.58,4.71-20.34,4.91-41.77,1.17-62.34C1020.43,7.46,991.19,0,960,0H0Z" class="shape-fill"></path>
-        </svg>
+    <div class="modal" id="contact-modal">
+        <div class="contact-modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-envelope"></i> Entre em Contato</h2>
+                <button class="modal-close-btn" id="contact-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="contact-info-grid">
+                    <div class="contact-card email">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Email</h4>
+                            <p class="contact-value" id="contact-email">matheus.abib.ma@gmail.com</p>
+                            <button class="copy-btn" data-text="matheus.abib.ma@gmail.com">
+                                <i class="far fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contact-card phone">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>Telefone/WhatsApp</h4>
+                            <p class="contact-value" id="contact-phone">+55 (11) 975072008</p>
+                            <button class="copy-btn" data-text="+5511975072008">
+                                <i class="far fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contact-card github">
+                        <div class="contact-icon">
+                            <i class="fab fa-github"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>GitHub</h4>
+                            <p class="contact-value" id="contact-github">github.com/MatheusAbib</p>
+                            <a href="https://github.com/MatheusAbib" target="_blank" class="contact-link">
+                                <i class="fas fa-external-link-alt"></i> Visitar
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="contact-card linkedin">
+                        <div class="contact-icon">
+                            <i class="fab fa-linkedin"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h4>LinkedIn</h4>
+                            <p class="contact-value" id="contact-linkedin">linkedin.com/in/MatheusAbib</p>
+                            <a href="https://linkedin.com/in/MatheusAbib" target="_blank" class="contact-link">
+                                <i class="fas fa-external-link-alt"></i> Visitar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+            </div>
+        </div>
     </div>
-</footer>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span>Calendário <span id="footer-year"></span></span>
+                    </div>
+                    <p class="footer-description">
+                        Calendário pessoal inteligente com feriados nacionais,
+                        estações do ano e gestão de compromissos.
+                    </p>
+                </div>
+
+                <div class="footer-section">
+                    <h3 class="footer-title">Recursos</h3>
+                    <ul class="footer-links-0">
+                        <li><a><i class="fas fa-flag"></i> Feriados Nacionais</a></li>
+                        <li><a><i class="fas fa-leaf"></i> Estações do Ano</a></li>
+                        <li><a><i class="fas fa-bell"></i> Lembretes</a></li>
+                        <li><a><i class="fas fa-calendar-alt"></i> Consultor de Datas</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3 class="footer-title">Ferramentas</h3>
+                    <ul class="footer-links-0">
+                        <li><a><i class="fas fa-plus-circle"></i> Adicionar Eventos</a></li>
+                        <li><a><i class="fas fa-redo"></i> Eventos Recorrentes</a></li>
+                        <li><a><i class="fas fa-search"></i> Buscar Datas</a></li>
+                        <li><a><i class="fas fa-palette"></i> Temas Personalizados</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3 class="footer-title">Ajuda</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" id="footer-how-to-use"><i class="fas fa-question-circle"></i> Como Usar</a></li>
+                        <li><a href="#" id="footer-contact"><i class="fas fa-envelope"></i> Contato</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <div class="footer-copyright">
+                        <p>&copy; <span id="current-footer-year"></span> Calendário. <br> Todos os direitos reservados.</p>
+                        <p class="footer-version">Versão 2.0.1</p>
+                    </div>
+
+                    <div class="footer-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-calendar-check"></i>
+                            <span><span id="footer-total-events">0</span> Eventos</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-flag"></i>
+                            <span><span id="footer-total-holidays">0</span> Feriados</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </footer>
     <script src="script.js"></script>
 
 </body>
