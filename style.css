@@ -287,7 +287,6 @@ body::-webkit-scrollbar-thumb,
 
 .header-actions {
     display: flex;
-    align-items: center;
     gap: 12px;
 }
 
@@ -1562,15 +1561,12 @@ body::-webkit-scrollbar-thumb,
 }
 
 .category-option label:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
     border-color: var(--primary-light);
 }
 
 .category-option input[type="radio"]:checked + label {
     border-color: var(--primary);
     background: rgba(var(--primary-rgb), 0.1);
-    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.15);
 }
 
 .category-color {
@@ -3039,7 +3035,6 @@ body::-webkit-scrollbar-thumb,
     }
 
     .header-content {
-        flex-direction: column;
         gap: 5px;
     }
 
@@ -3061,7 +3056,7 @@ body::-webkit-scrollbar-thumb,
 
     .info-cards {
         grid-template-columns: repeat(2, 1fr);
-        margin: 17% 20px 0;
+        margin: 8% 0px 0;
     }
 
     .controls {
@@ -3089,7 +3084,18 @@ body::-webkit-scrollbar-thumb,
     }
 }
 
+@media (max-width: 960px){
+    
+    #live-clock-container {
+        display: none;
+    }
+}
+
 @media (max-width: 767.98px) {
+
+    .header-actions{
+        gap: 8px;
+    }
     #recurring-event-modal .modal-actions {
         flex-direction: column;
     }
@@ -3100,13 +3106,12 @@ body::-webkit-scrollbar-thumb,
 
     .how-to-use-modal-content,
     .contact-modal-content {
-        max-width: 95%;
         max-height: 90vh;
         margin: 5px;
     }
 
     .modal {
-        padding: 5px;
+        padding: 0px;
     }
 
     .modal-header {
@@ -3241,17 +3246,18 @@ body::-webkit-scrollbar-thumb,
     .mobile-toggle-btn {
         padding: 6px 12px;
         font-size: 0.9em;
+            border: 1px solid var(--card-border);
+    color: var(--text);
+    border-radius: 6px;
     }
 
     .container {
-        padding: 0 8px;
+        padding: 0 5px;
         gap: 10px;
     }
 
     .info-cards {
         grid-template-columns: 1fr;
-        gap: 16px;
-        margin: 15% 20px 0;
     }
 
     .info-card {
@@ -3272,6 +3278,7 @@ body::-webkit-scrollbar-thumb,
         padding: 16px 0;
         margin-bottom: 16px;
         gap: 10px;
+        flex-direction: column;
     }
 
     .controls button {
@@ -3291,9 +3298,9 @@ body::-webkit-scrollbar-thumb,
     }
 
     .calendar-header button {
-        width: 36px;
-        height: 36px;
-        font-size: 16px;
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
     }
 
     .weekdays div {
@@ -3404,12 +3411,6 @@ body::-webkit-scrollbar-thumb,
         gap: 10px;
     }
 
-    #live-clock-container {
-        padding: 8px 20px;
-        min-width: auto;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
 
     .live-clock {
         font-size: 1.2rem;
@@ -3451,10 +3452,13 @@ body::-webkit-scrollbar-thumb,
         height: 32px;
         font-size: 0.8em;
     }
+    .event-category-selector, .recurrence-type-selector{
+        gap: 6px;
+    }
 
     .modal-content {
-        max-width: 95%;
-        padding: 20px;
+        max-width: 97%;
+        padding: 20px 15px;
     }
 
     .holiday-modal-content {
@@ -3473,6 +3477,9 @@ body::-webkit-scrollbar-thumb,
         height: 60px;
         font-size: 1.8em;
     }
+    .modal-actions{
+            flex-direction: column;
+    }
 
     .modal-actions button {
         min-width: 120px;
@@ -3484,7 +3491,7 @@ body::-webkit-scrollbar-thumb,
     }
 
     .date-consultant {
-        padding: 20px;
+        padding: 20px 15px;
     }
 
     .input-with-button {
@@ -3524,7 +3531,7 @@ body::-webkit-scrollbar-thumb,
     }
 
     .desktop-title {
-        display: none;
+        display: none !important;
     }
 
     .event-list-item {
@@ -3612,9 +3619,10 @@ body::-webkit-scrollbar-thumb,
     }
 
     .header-actions .help-btn,
-    .header-actions .contact-header-btn {
-        padding: 11px 15px;
-        font-size: 1rem;
+    .header-actions .contact-header-btn,
+    .header-actions .theme-toggle {
+        padding: 8px 12px;
+        font-size: 0.8rem;
     }
 
     .header-actions .help-btn i,
@@ -3655,12 +3663,6 @@ body::-webkit-scrollbar-thumb,
         font-size: 1.1rem;
     }
 
-    #live-clock-container {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-    }
-
     .live-clock {
         text-align: center;
         font-size: 1.3rem;
@@ -3685,11 +3687,7 @@ body::-webkit-scrollbar-thumb,
 
     .calendar-header h1 {
         padding-right: 10px;
-        font-size: 1.2em;
-    }
-
-    .controls {
-        flex-direction: row;
+        font-size: 1em;
     }
 
     .controls button {
@@ -3699,7 +3697,7 @@ body::-webkit-scrollbar-thumb,
 
     .info-cards {
         grid-template-columns: 1fr;
-        margin: 110px 0 0;
+        margin: 10% 0 0;
     }
 
     .info-card-content {
@@ -3718,17 +3716,12 @@ body::-webkit-scrollbar-thumb,
         padding: 14px 16px;
     }
 
-    .calendar-header h1 {
-        font-size: 1.1rem;
-    }
-
     .weekdays div {
         padding: 10px 2px;
         font-size: 0.75rem;
     }
 
     .days div {
-        min-height: 70px;
         padding: 8px 3px;
         font-size: 15px;
     }

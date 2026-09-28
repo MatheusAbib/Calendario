@@ -121,10 +121,16 @@
         "9-7": { name: "Revolução Constitucionalista (SP)", type: "Feriado Estadual/Municipal" }
     };
 
-    document.documentElement.setAttribute("data-theme", theme);
-    themeToggle.innerHTML = theme === "dark"
-        ? '<i class="fas fa-sun"></i> Tema Claro'
-        : '<i class="fas fa-moon"></i> Tema Escuro';
+document.documentElement.setAttribute("data-theme", theme);
+updateThemeToggleText();
+
+function updateThemeToggleText() {
+    const isMobile = window.innerWidth < 940;
+    const label = theme === "dark" ? "Tema Claro" : "Tema Escuro";
+    const icon = theme === "dark" ? "fa-sun" : "fa-moon";
+
+    themeToggle.innerHTML = `<i class="fas ${icon}"></i>${isMobile ? '' : ' ' + label}`;
+}
 
     function hasStoredData() {
         const hasEvents = Object.keys(events).length > 0;
@@ -1404,15 +1410,13 @@
         openModal(selectedDate, day);
     };
 
-    themeToggle.onclick = () => {
-        theme = theme === "light" ? "dark" : "light";
-        document.documentElement.setAttribute("data-theme", theme);
-        localStorage.setItem("theme", theme);
+themeToggle.onclick = () => {
+    theme = theme === "light" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
 
-        themeToggle.innerHTML = theme === "dark"
-            ? '<i class="fas fa-sun"></i> Tema Claro'
-            : '<i class="fas fa-moon"></i> Tema Escuro';
-    };
+    updateThemeToggleText();
+};
 
     eventListToggle.onclick = () => {
         const eventListSection = document.querySelector('.event-list-section');
