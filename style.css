@@ -2970,6 +2970,7 @@ body::-webkit-scrollbar-thumb,
 }
 
 @media (min-width: 768px) {
+
     .desktop-title {
         display: flex;
         align-items: center;
@@ -3092,6 +3093,9 @@ body::-webkit-scrollbar-thumb,
 }
 
 @media (max-width: 767.98px) {
+        .consultant-header h3{
+        font-size: 1.2rem;
+    }
 
     .header-actions{
         gap: 8px;
@@ -3251,9 +3255,13 @@ body::-webkit-scrollbar-thumb,
     border-radius: 6px;
     }
 
+    .mobile-toggle-btn:hover{
+        border-color: var(--primary-light);
+    }
+
     .container {
         padding: 0 5px;
-        gap: 10px;
+        gap: 0;
     }
 
     .info-cards {
@@ -3486,8 +3494,13 @@ body::-webkit-scrollbar-thumb,
         padding: 6px 24px;
     }
 
+    .input-group label{
+        gap: 5px;
+        font-size: 0.8rem;
+    }
+
     .consultant-header p {
-        font-size: 0.9rem;
+        display: none;
     }
 
     .date-consultant {
@@ -3607,7 +3620,10 @@ body::-webkit-scrollbar-thumb,
 
 @media (max-width: 480px) {
     .consultant-result {
-        padding: 25px;
+        padding: 15px;
+    }
+    .result-details div{
+        font-size: 0.8rem;
     }
 
     .modal-header {
