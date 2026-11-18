@@ -1,0 +1,94 @@
+﻿.botanical-background {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  right: auto;
+  width: calc(100vw - 48px);
+  max-width: none;
+  height: 100%;
+  transform: translateX(-50%);
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.botanical-background-ornament {
+  position: absolute;
+  width: var(--botanical-size, 150px) !important;
+  max-width: none;
+  height: auto;
+  opacity: 0.4;
+  filter: sepia(0.12);
+  pointer-events: none;
+  transform-origin: center center;
+}
+
+.botanical-background-ornament svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.botanical-background-ornament--left {
+  left: 12px;
+  right: auto;
+}
+
+.botanical-background-ornament--right {
+  right: 12px;
+  left: auto;
+}
+
+
+
+
+
+.app::before,
+.app::after {
+  display: none;
+}
+
+@media (max-width: 1499px) {
+  .botanical-background-ornament {
+    width: min(var(--botanical-size, 150px), 10vw) !important;
+    opacity: 0.32;
+  }
+}
+
+@media (max-width: 1100px) {
+  .botanical-background-ornament {
+    width: min(var(--botanical-size, 150px), 7vw) !important;
+    opacity: 0.2;
+  }
+}
+
+@media (max-width: 700px) {
+  .botanical-background {
+    width: calc(100vw - 20px);
+  }
+
+  .botanical-background-ornament {
+    width: min(var(--botanical-size, 150px), 45px) !important;
+    opacity: 0.12;
+  }
+
+  .botanical-background-ornament--left {
+    left: 4px;
+  }
+
+  .botanical-background-ornament--right {
+    right: 4px;
+  }
+}
+
+.botanical-background {
+  z-index: -1;
+  pointer-events: none;
+}
+
+.botanical-background-ornament,
+.botanical-background-ornament svg {
+  pointer-events: none;
+}

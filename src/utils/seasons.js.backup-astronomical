@@ -1,0 +1,18 @@
+﻿const SEASONS_BY_MONTH = [
+  "Verão",
+  "Verão",
+  "Verão → Outono · 20/03",
+  "Outono",
+  "Outono",
+  "Outono → Inverno · 21/06",
+  "Inverno",
+  "Inverno",
+  "Inverno → Primavera · 22/09",
+  "Primavera",
+  "Primavera",
+  "Primavera → Verão · 21/12"
+];
+
+export function getMonthSeason(month) {
+  return SEASONS_BY_MONTH[month] || "";
+}
