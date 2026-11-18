@@ -3408,6 +3408,32 @@ body {
   pointer-events: none;
 }
 
+
+
+.calendar-colophon__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  text-align: center;
+}
+
+.calendar-colophon__title {
+  margin: 0;
+  color: #6e5137;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+}
+
+.calendar-colophon__subtitle {
+  color: #8e7858;
+  font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
 .calendar-colophon--ornate > span:first-child {
   font-size: clamp(1.3rem, 2.5vw, 2rem);
   font-weight: 400;

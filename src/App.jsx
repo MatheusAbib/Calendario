@@ -311,9 +311,14 @@ export default function App() {
       />
       <DateConsultant />
 
+
 <footer className="calendar-colophon calendar-colophon--ornate">
-  <span>Calendário {year}</span>
+  <div className="calendar-colophon__content">
+    <h2 className="calendar-colophon__title">Almanaque Botânico</h2>
+    <span className="calendar-colophon__subtitle">Calendário {year}</span>
+  </div>
 </footer>
+
 
       {selectedDate && (
         <DayPanel
