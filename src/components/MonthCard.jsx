@@ -1,4 +1,4 @@
-﻿import { getMonthSeason } from "../utils/seasons";
+import { getMonthSeason } from "../utils/seasons";
 import { getSpecialDatesForDate } from "../utils/specialDates";
 import { useState } from "react";
 import CalendarDay from "./CalendarDay";
@@ -57,7 +57,7 @@ export default function MonthCard({
         {!imageFailed && (
           <img
             className="month-artwork-image"
-            src={`/imagens/meses/${IMAGE_NAMES[month]}.jpg`}
+            src={`${import.meta.env.BASE_URL}imagens/meses/${IMAGE_NAMES[month]}.jpg`}
             alt={`Ilustração botânica de ${MONTHS[month]}`}
             loading="lazy"
             onError={() => setImageFailed(true)}
